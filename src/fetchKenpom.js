@@ -52,5 +52,3 @@ export async function fetchKenpom() {
 
 	return teams;
 }
-
-console.log(await fetchKenpom());
