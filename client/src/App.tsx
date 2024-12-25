@@ -1,9 +1,9 @@
-import { Button } from './components/ui/button';
+import RankingsList from './components/RankingsList/RankingsList';
 
 function App() {
 	return (
 		<div>
-			<Button>Hello world</Button>
+			<RankingsList />
 		</div>
 	);
 }
