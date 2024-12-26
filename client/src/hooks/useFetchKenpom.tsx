@@ -1,5 +1,5 @@
 import { KenpomRankings } from '@/types/kenpom';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useCookies } from 'react-cookie';
 
 const API_DOMAIN = 'http://localhost:3000';
@@ -13,7 +13,9 @@ export default function useFetchKenpom() {
 
 	const teams = kenpomRankings as KenpomRankings;
 
-	getKenpomRankings();
+	useEffect(() => {
+		getKenpomRankings();
+	}, []);
 
 	async function fetchKenpomAPI() {
 		if (teams) return;
