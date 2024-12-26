@@ -4,6 +4,7 @@ export interface KenpomRankings {
 
 export interface KenpomTeam {
 	rank: number;
+	name: string;
 	team: string;
 	conference: string;
 	win_loss: string;
