@@ -7,7 +7,7 @@ export interface KenpomTeam {
 	name: string;
 	team: string;
 	conference: string;
-	win_loss: string;
+	win_loss: WinLossRecord;
 	net_rating: number;
 	offensive_rating: number;
 	offensive_rating_rank: number;
@@ -26,3 +26,5 @@ export interface KenpomTeam {
 	noncon_sos: number;
 	noncon_sos_rank: number;
 }
+
+export type WinLossRecord = `${number}-${number}`;
