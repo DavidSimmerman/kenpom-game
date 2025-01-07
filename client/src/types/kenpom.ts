@@ -25,6 +25,7 @@ export interface KenpomTeam {
 	sos_defensive_rating_rank: number;
 	noncon_sos: number;
 	noncon_sos_rank: number;
+	price: number;
 }
 
 export type WinLossRecord = `${number}-${number}`;

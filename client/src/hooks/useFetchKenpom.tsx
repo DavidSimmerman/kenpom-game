@@ -20,6 +20,8 @@ export default function useFetchKenpom() {
 	async function fetchKenpomAPI() {
 		if (teams) return;
 
+		setLoading(true);
+
 		const response = await fetch(`${API_DOMAIN}/kenpom`);
 
 		if (!response.ok) {
