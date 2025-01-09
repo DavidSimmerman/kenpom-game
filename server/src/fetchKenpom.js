@@ -24,6 +24,10 @@ const HEADERS = [
 	'noncon_sos_rank'
 ];
 
+const NET_OFFSET = 25;
+const SCALING_FACTOR = 0.3;
+const NET_WEIGHT = 1.5;
+
 export async function fetchKenpom() {
 	const response = await fetch('https://kenpom.com/');
 	const data = await response.text();
@@ -32,7 +36,7 @@ export async function fetchKenpom() {
 
 	const rows = $('#ratings-table tbody tr');
 
-	const teams = Array.from(rows).reduce((acc, tr) => {
+	const teams = Array.from(rows).reduce((acc, tr, _, allRows) => {
 		const teamInfo = {};
 
 		$(tr)
@@ -45,10 +49,22 @@ export async function fetchKenpom() {
 				else if (!isNaN(tdContent)) teamInfo[header] = parseFloat(tdContent);
 				else teamInfo[header] = tdContent;
 			});
+
+		teamInfo.price = getPrice(teamInfo, allRows.length);
+
 		acc[teamInfo.team] = teamInfo;
 
 		return acc;
 	}, {});
 
 	return teams;
+}
+
+function getPrice({ net_rating, rank }, totalTeams) {
+	const normalizedNet = Math.max(net_rating + NET_OFFSET, 0);
+	const weightedNet = SCALING_FACTOR * normalizedNet ** NET_WEIGHT;
+	const priceWithRankBoost = weightedNet + (totalTeams - rank + 1) / 4;
+	const roundedPrice = Math.round(priceWithRankBoost * 100) / 100;
+
+	return roundedPrice;
 }
