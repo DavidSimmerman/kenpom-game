@@ -33,7 +33,7 @@ jobs:
                   for dir in ./layers/*; do
                     if [ -d "$dir" ]; then
                       LAYER_NAME=$(basename "$dir")
-                      ZIP_FILE="${dir}.zip"
+                      ZIP_FILE="${LAYER_NAME}.zip"
                       HASH_FILE=".layer_hashes/${LAYER_NAME}.hash"
                       CURRENT_HASH=$(find "$dir" -type f -exec sha256sum {} \; | sha256sum | awk '{ print $1 }')
 
@@ -49,7 +49,11 @@ jobs:
                         cd -
                       fi
 
-                      zip -r "$ZIP_FILE" "$dir" -x "*.git*" "node_modules/*"
+                      # Zip the *contents* of the directory, not the directory itself
+                      cd "$dir"
+                      zip -r "../$ZIP_FILE" . -x "*.git*" "node_modules/*"
+                      cd -
+
                       LAYER_ARN=$(aws lambda publish-layer-version \
                         --layer-name "$LAYER_NAME" \
                         --description "Updated $LAYER_NAME layer" \
@@ -67,7 +71,7 @@ jobs:
                   for dir in ./lambdas/*; do
                     if [ -d "$dir" ]; then
                       FUNCTION_NAME=$(basename "$dir")
-                      ZIP_FILE="${dir}.zip"
+                      ZIP_FILE="${FUNCTION_NAME}.zip"
 
                       # Install dependencies (if package.json exists)
                       if [ -f "$dir/package.json" ]; then
@@ -76,7 +80,10 @@ jobs:
                         cd -
                       fi
 
-                      zip -r "$ZIP_FILE" "$dir" -x "*.git*" "node_modules/*"
+                      # Zip the *contents* of the directory, not the directory itself
+                      cd "$dir"
+                      zip -r "../$ZIP_FILE" . -x "*.git*" "node_modules/*"
+                      cd -
 
                       aws lambda update-function-code \
                         --function-name "$FUNCTION_NAME" \
