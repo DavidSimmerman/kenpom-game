@@ -1,106 +1,93 @@
-name: Deploy Lambda and Layers to AWS
+name: Deploy AWS Lambdas and Layers
 
 on:
     push:
         branches:
-            - main
-    workflow_dispatch:
+            - main # Trigger on pushes to the main branch
+    workflow_dispatch: # Allow manual triggering of the workflow
 
 jobs:
     deploy:
         runs-on: ubuntu-latest
 
         steps:
-            - name: Checkout repository
-              uses: actions/checkout@v3
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 18 # Adjust to your Node.js version
 
             - name: Configure AWS credentials
               uses: aws-actions/configure-aws-credentials@v3
               with:
                   aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  aws-region: ${{ secrets.AWS_REGION }}
+                  aws-region: us-east-1 # Adjust to your desired AWS region
 
-            - name: Set up Node.js
-              uses: actions/setup-node@v3
-              with:
-                  node-version: 22
+            - name: Install global dependencies
+              run: npm install --global # Modify if additional tools are required
 
-            - name: Deploy layers
+            - name: Get Changed Files
+              id: changes
               run: |
-                  > layer_arns.txt
-                  mkdir -p .layer_hashes
-                  for dir in ./layers/*; do
-                    if [ -d "$dir" ]; then
-                      LAYER_NAME=$(basename "$dir")
-                      ZIP_FILE="./${LAYER_NAME}.zip"
-                      HASH_FILE=".layer_hashes/${LAYER_NAME}.hash"
-                      CURRENT_HASH=$(find "$dir" -type f -exec sha256sum {} \; | sha256sum | awk '{ print $1 }')
+                  git fetch origin main
+                  git diff --name-only origin/main HEAD > changed_files.txt
+                  echo "Changed files:"
+                  cat changed_files.txt
 
-                      if [ -f "$HASH_FILE" ] && [ "$(cat "$HASH_FILE")" == "$CURRENT_HASH" ]; then
-                        echo "Layer $LAYER_NAME has not changed, skipping deployment."
-                        continue
+            - name: Deploy Changed Lambda Layers
+              id: deploy_layers
+              run: |
+                  echo "Checking for changed Lambda Layers..."
+                  LATEST_LAYERS=""
+                  for layer_dir in $(find layers -type f -name 'package.json' -exec dirname {} \; | sort -u); do
+                    if grep -q "^$layer_dir/" changed_files.txt; then
+                      echo "Deploying changed layer in $layer_dir"
+                      cd $layer_dir
+                      if [ -f package.json ] && [ -n "$(grep '"deploy"' package.json)" ]; then
+                        npm run deploy
+                        LAYER_NAME=$(basename $layer_dir)
+                        LAYER_VERSION=$(aws lambda list-layer-versions --layer-name $LAYER_NAME --query 'LayerVersions[0].Version' --output text)
+                        echo "$LAYER_NAME:$LAYER_VERSION" >> $GITHUB_ENV
+                      else
+                        echo "No deploy script in $layer_dir/package.json. Skipping..."
                       fi
-
-                      # Install dependencies (if package.json exists)
-                      if [ -f "$dir/package.json" ]; then
-                        (cd "$dir" && npm install --production)
-                      fi
-
-                      # Zip the contents of the layer directory
-                      cd "$dir"
-                      zip -r "../${ZIP_FILE}" . -x "*.git*" "node_modules/*"
                       cd -
-
-                      if [ ! -f "$ZIP_FILE" ]; then
-                        echo "Error: ZIP file $ZIP_FILE not found for layer $LAYER_NAME"
-                        exit 1
-                      fi
-
-                      LAYER_ARN=$(aws lambda publish-layer-version \
-                        --layer-name "$LAYER_NAME" \
-                        --description "Updated $LAYER_NAME layer" \
-                        --zip-file "fileb://${ZIP_FILE}" \
-                        --query 'LayerVersionArn' \
-                        --output text)
-
-                      echo "$LAYER_NAME=$LAYER_ARN" >> layer_arns.txt
-                      echo "$CURRENT_HASH" > "$HASH_FILE"
+                    else
+                      echo "No changes detected for layer in $layer_dir. Skipping..."
                     fi
                   done
 
-            - name: Deploy Lambda functions
+            - name: Deploy Lambda Functions
               run: |
-                  for dir in ./lambdas/*; do
-                    if [ -d "$dir" ]; then
-                      FUNCTION_NAME=$(basename "$dir")
-                      ZIP_FILE="./${FUNCTION_NAME}.zip"
-
-                      # Install dependencies (if package.json exists)
-                      if [ -f "$dir/package.json" ]; then
-                        (cd "$dir" && npm install --production)
+                  echo "Deploying Lambda Functions..."
+                  for func_dir in $(find . -type f -name 'package.json' -exec dirname {} \; | grep -v "^layers" | sort -u); do
+                    if grep -q "^$func_dir/" changed_files.txt; then
+                      echo "Deploying Lambda in $func_dir"
+                      cd $func_dir
+                      if [ -f package.json ] && [ -n "$(grep '"deploy"' package.json)" ]; then
+                        npm run deploy
+                      else
+                        echo "No deploy script in $func_dir/package.json. Skipping..."
                       fi
-
-                      # Zip the contents of the Lambda directory
-                      cd "$dir"
-                      zip -r "../${ZIP_FILE}" . -x "*.git*" "node_modules/*"
                       cd -
-
-                      if [ ! -f "$ZIP_FILE" ]; then
-                        echo "Error: ZIP file $ZIP_FILE not found for function $FUNCTION_NAME"
-                        exit 1
-                      fi
-
-                      aws lambda update-function-code \
-                        --function-name "$FUNCTION_NAME" \
-                        --zip-file "fileb://${ZIP_FILE}"
-
-                      while IFS= read -r line; do
-                        LAYER_NAME=${line%=*}
-                        LAYER_ARN=${line#*=}
-                        aws lambda update-function-configuration \
-                          --function-name "$FUNCTION_NAME" \
-                          --layers "$LAYER_ARN"
-                      done < layer_arns.txt
+                    else
+                      echo "No changes detected for function in $func_dir. Skipping..."
                     fi
                   done
+
+            - name: Update Lambda Functions with Latest Layers
+              run: |
+                  echo "Updating Lambda functions with the latest layers..."
+                  while IFS= read -r line; do
+                    LAYER_NAME=$(echo $line | cut -d ':' -f 1)
+                    LAYER_VERSION=$(echo $line | cut -d ':' -f 2)
+                    echo "Updating functions using layer $LAYER_NAME to version $LAYER_VERSION..."
+                    FUNCTIONS=$(aws lambda list-functions --query 'Functions[?Layers[?LayerArn.contains(@, `'${LAYER_NAME}'`)]].FunctionName' --output text)
+                    for function in $FUNCTIONS; do
+                      echo "Updating $function to use layer $LAYER_NAME version $LAYER_VERSION..."
+                      aws lambda update-function-configuration --function-name $function --layers "arn:aws:lambda:${AWS_REGION}:${AWS_ACCOUNT_ID}:layer:$LAYER_NAME:$LAYER_VERSION"
+                    done
+                  done < <(env | grep '^LAYER_NAME=' | sed 's/^LAYER_NAME=//')
