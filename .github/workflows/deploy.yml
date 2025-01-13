@@ -33,7 +33,7 @@ jobs:
                   for dir in ./layers/*; do
                     if [ -d "$dir" ]; then
                       LAYER_NAME=$(basename "$dir")
-                      ZIP_FILE="${LAYER_NAME}.zip"
+                      ZIP_FILE="./${LAYER_NAME}.zip"
                       HASH_FILE=".layer_hashes/${LAYER_NAME}.hash"
                       CURRENT_HASH=$(find "$dir" -type f -exec sha256sum {} \; | sha256sum | awk '{ print $1 }')
 
@@ -44,20 +44,16 @@ jobs:
 
                       # Install dependencies (if package.json exists)
                       if [ -f "$dir/package.json" ]; then
-                        cd "$dir"
-                        npm install --production
-                        cd -
+                        (cd "$dir" && npm install --production)
                       fi
 
                       # Zip the *contents* of the directory, not the directory itself
-                      cd "$dir"
-                      zip -r "../$ZIP_FILE" . -x "*.git*" "node_modules/*"
-                      cd -
+                      (cd "$dir" && zip -r "$ZIP_FILE" . -x "*.git*" "node_modules/*")
 
                       LAYER_ARN=$(aws lambda publish-layer-version \
                         --layer-name "$LAYER_NAME" \
                         --description "Updated $LAYER_NAME layer" \
-                        --zip-file "fileb://$ZIP_FILE" \
+                        --zip-file "fileb://${ZIP_FILE}" \
                         --query 'LayerVersionArn' \
                         --output text)
 
@@ -71,23 +67,24 @@ jobs:
                   for dir in ./lambdas/*; do
                     if [ -d "$dir" ]; then
                       FUNCTION_NAME=$(basename "$dir")
-                      ZIP_FILE="${FUNCTION_NAME}.zip"
+                      ZIP_FILE="./${FUNCTION_NAME}.zip"
 
                       # Install dependencies (if package.json exists)
                       if [ -f "$dir/package.json" ]; then
-                        cd "$dir"
-                        npm install --production
-                        cd -
+                        (cd "$dir" && npm install --production)
                       fi
 
                       # Zip the *contents* of the directory, not the directory itself
-                      cd "$dir"
-                      zip -r "../$ZIP_FILE" . -x "*.git*" "node_modules/*"
-                      cd -
+                      (cd "$dir" && zip -r "$ZIP_FILE" . -x "*.git*" "node_modules/*")
+
+                      if [ ! -f "$ZIP_FILE" ]; then
+                        echo "Error: ZIP file $ZIP_FILE not found."
+                        exit 1
+                      fi
 
                       aws lambda update-function-code \
                         --function-name "$FUNCTION_NAME" \
-                        --zip-file "fileb://$ZIP_FILE"
+                        --zip-file "fileb://${ZIP_FILE}"
 
                       while IFS= read -r line; do
                         LAYER_NAME=${line%=*}
