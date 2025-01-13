@@ -1,0 +1,93 @@
+name: Deploy Lambda and Layers to AWS
+
+on:
+    push:
+        branches:
+            - main
+    workflow_dispatch:
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v3
+
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v3
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ${{ secrets.AWS_REGION }}
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 16
+
+            - name: Deploy layers
+              run: |
+                  > layer_arns.txt
+                  mkdir -p .layer_hashes
+                  for dir in ./layers/*; do
+                    if [ -d "$dir" ]; then
+                      LAYER_NAME=$(basename "$dir")
+                      ZIP_FILE="${dir}.zip"
+                      HASH_FILE=".layer_hashes/${LAYER_NAME}.hash"
+                      CURRENT_HASH=$(find "$dir" -type f -exec sha256sum {} \; | sha256sum | awk '{ print $1 }')
+
+                      if [ -f "$HASH_FILE" ] && [ "$(cat "$HASH_FILE")" == "$CURRENT_HASH" ]; then
+                        echo "Layer $LAYER_NAME has not changed, skipping deployment."
+                        continue
+                      fi
+
+                      # Install dependencies (if package.json exists)
+                      if [ -f "$dir/package.json" ]; then
+                        cd "$dir"
+                        npm install --production
+                        cd -
+                      fi
+
+                      zip -r "$ZIP_FILE" "$dir" -x "*.git*" "node_modules/*"
+                      LAYER_ARN=$(aws lambda publish-layer-version \
+                        --layer-name "$LAYER_NAME" \
+                        --description "Updated $LAYER_NAME layer" \
+                        --zip-file "fileb://$ZIP_FILE" \
+                        --query 'LayerVersionArn' \
+                        --output text)
+
+                      echo "$LAYER_NAME=$LAYER_ARN" >> layer_arns.txt
+                      echo "$CURRENT_HASH" > "$HASH_FILE"
+                    fi
+                  done
+
+            - name: Deploy Lambda functions
+              run: |
+                  for dir in ./lambdas/*; do
+                    if [ -d "$dir" ]; then
+                      FUNCTION_NAME=$(basename "$dir")
+                      ZIP_FILE="${dir}.zip"
+
+                      # Install dependencies (if package.json exists)
+                      if [ -f "$dir/package.json" ]; then
+                        cd "$dir"
+                        npm install --production
+                        cd -
+                      fi
+
+                      zip -r "$ZIP_FILE" "$dir" -x "*.git*" "node_modules/*"
+
+                      aws lambda update-function-code \
+                        --function-name "$FUNCTION_NAME" \
+                        --zip-file "fileb://$ZIP_FILE"
+
+                      while IFS= read -r line; do
+                        LAYER_NAME=${line%=*}
+                        LAYER_ARN=${line#*=}
+                        aws lambda update-function-configuration \
+                          --function-name "$FUNCTION_NAME" \
+                          --layers "$LAYER_ARN"
+                      done < layer_arns.txt
+                    fi
+                  done
