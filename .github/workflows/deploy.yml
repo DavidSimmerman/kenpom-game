@@ -47,8 +47,15 @@ jobs:
                         (cd "$dir" && npm install --production)
                       fi
 
-                      # Zip the *contents* of the directory, not the directory itself
-                      (cd "$dir" && zip -r "$ZIP_FILE" . -x "*.git*" "node_modules/*")
+                      # Zip the contents of the layer directory
+                      cd "$dir"
+                      zip -r "../${ZIP_FILE}" . -x "*.git*" "node_modules/*"
+                      cd -
+
+                      if [ ! -f "$ZIP_FILE" ]; then
+                        echo "Error: ZIP file $ZIP_FILE not found for layer $LAYER_NAME"
+                        exit 1
+                      fi
 
                       LAYER_ARN=$(aws lambda publish-layer-version \
                         --layer-name "$LAYER_NAME" \
@@ -74,11 +81,13 @@ jobs:
                         (cd "$dir" && npm install --production)
                       fi
 
-                      # Zip the *contents* of the directory, not the directory itself
-                      (cd "$dir" && zip -r "$ZIP_FILE" . -x "*.git*" "node_modules/*")
+                      # Zip the contents of the Lambda directory
+                      cd "$dir"
+                      zip -r "../${ZIP_FILE}" . -x "*.git*" "node_modules/*"
+                      cd -
 
                       if [ ! -f "$ZIP_FILE" ]; then
-                        echo "Error: ZIP file $ZIP_FILE not found."
+                        echo "Error: ZIP file $ZIP_FILE not found for function $FUNCTION_NAME"
                         exit 1
                       fi
 
