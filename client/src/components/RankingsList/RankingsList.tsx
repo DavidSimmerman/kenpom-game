@@ -102,7 +102,7 @@ export default function RankingsList() {
 										return (
 											<>
 												<TableCell
-													className="text-center"
+													className="text-center whitespace-nowrap"
 													key={`kp_rankings_table_team_${team.team}_${header}`}
 												>
 													{team[rankHeader] ? (
