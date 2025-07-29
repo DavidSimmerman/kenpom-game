@@ -1,0 +1,19 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Debug server",
+			"type": "node",
+			"request": "launch",
+			"program": "src/server.ts",
+			"runtimeExecutable": "tsx",
+			"cwd": "${workspaceFolder}/server",
+			"envFile": "${workspaceFolder}/server/.env",
+			"env": {
+				"NODE_ENV": "development"
+			},
+			"console": "integratedTerminal",
+			"skipFiles": ["<node_internals>/**"]
+		}
+	]
+}
