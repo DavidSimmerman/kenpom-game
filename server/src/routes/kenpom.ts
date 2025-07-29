@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import getKenpomRankings from '@controllers/kenpom.js';
+import getKenpomRankings from '../controllers/kenpom.js';
 
 const router = Router();
 

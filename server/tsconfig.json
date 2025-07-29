@@ -9,13 +9,7 @@
 		"strict": true,
 		"esModuleInterop": true,
 		"skipLibCheck": true,
-		"baseUrl": ".",
-		"paths": {
-			"@/*": ["src/*"],
-			"@controllers/*": ["src/controllers/*"],
-			"@routes/*": ["src/routes/*"],
-			"@services/*": ["src/services/*"]
-		}
+		"baseUrl": "."
 	},
 	"include": ["src"]
 }

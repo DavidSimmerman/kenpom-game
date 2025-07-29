@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import http from 'http';
 import dotenv from 'dotenv';
-import kenpomRoutes from '@routes/kenpom.js';
+import kenpomRoutes from './routes/kenpom.js';
 
 dotenv.config();
 
