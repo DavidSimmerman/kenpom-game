@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import http from 'http';
 import dotenv from 'dotenv';
 import kenpomRoutes from './routes/kenpom.js';
+import cors from 'cors';
 
 dotenv.config();
 
@@ -9,6 +10,11 @@ const app = express();
 const PORT = parseInt(process.env.PORT ?? '3000');
 
 app.use(express.json());
+app.use(
+	cors({
+		origin: ['http://localhost:5173']
+	})
+);
 app.use('/kenpom', kenpomRoutes);
 
 app.get('/status', (req, res) => {

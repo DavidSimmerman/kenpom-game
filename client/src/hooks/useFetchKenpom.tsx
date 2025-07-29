@@ -2,7 +2,7 @@ import { KenpomRankings } from '@/types/kenpom';
 import { useEffect, useRef, useState } from 'react';
 import { useCookies } from 'react-cookie';
 
-const API_DOMAIN = 'http://localhost:3000';
+const API_DOMAIN = 'http://192.168.1.56:3015';
 
 export default function useFetchKenpom() {
 	const responsePromise = useRef<Promise<void>>();
