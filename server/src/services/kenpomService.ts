@@ -51,6 +51,7 @@ export async function fetchKenpomRankings(): Promise<KenpomData> {
 
 				if (header.endsWith('rank')) teamInfo[header] = parseInt(tdContent);
 				else if (!isNaN(Number(tdContent))) teamInfo[header] = parseFloat(tdContent);
+				else if (header === 'team') teamInfo[header] = tdContent.replace(/[ 0-9]+$/g, '');
 				else teamInfo[header] = tdContent;
 			});
 

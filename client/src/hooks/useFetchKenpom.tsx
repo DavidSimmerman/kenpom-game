@@ -1,6 +1,5 @@
 import { KenpomRankings } from '@/types/kenpom';
 import { useEffect, useRef, useState } from 'react';
-import { useCookies } from 'react-cookie';
 
 const API_DOMAIN = 'http://192.168.1.56:3015';
 
@@ -8,18 +7,13 @@ export default function useFetchKenpom() {
 	const responsePromise = useRef<Promise<void>>();
 	const [loading, setLoading] = useState<boolean>();
 	const [error, setError] = useState<string>();
-
-	const [{ kenpomRankings }, setCookie] = useCookies(['kenpomRankings']);
-
-	const teams = kenpomRankings as KenpomRankings;
+	const [teams, setTeams] = useState<KenpomRankings>();
 
 	useEffect(() => {
 		getKenpomRankings();
 	}, []);
 
 	async function fetchKenpomAPI() {
-		if (teams) return;
-
 		setLoading(true);
 
 		const response = await fetch(`${API_DOMAIN}/kenpom`);
@@ -33,7 +27,7 @@ export default function useFetchKenpom() {
 		if (data.error) {
 			throw new Error(data.error);
 		} else {
-			setCookie('kenpomRankings', JSON.stringify(data.rankings));
+			setTeams(data);
 		}
 	}
 
