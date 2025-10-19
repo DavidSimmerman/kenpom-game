@@ -92,10 +92,8 @@ export default function RankingsList() {
 										className="text-center flex w-full justify-between items-center"
 										key={`kp_rankings_table_team_${team.team}_price`}
 									>
-										<span>
-											$&nbsp;
-											{team.price.toFixed(2)}
-										</span>
+										<span>$&nbsp;</span>
+										<span>{team.price.toFixed(2)}</span>
 										{/* {Object.values(trendIconMap)[Math.floor(Math.random() * 3)]} */}
 									</TableCell>
 									{Object.entries(team).map(([header, rank]) => {
