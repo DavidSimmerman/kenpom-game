@@ -94,7 +94,7 @@ export default function RankingsList() {
 									>
 										<span>
 											$&nbsp;
-											{team.price}
+											{team.price.toFixed(2)}
 										</span>
 										{/* {Object.values(trendIconMap)[Math.floor(Math.random() * 3)]} */}
 									</TableCell>
