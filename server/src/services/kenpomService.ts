@@ -22,13 +22,13 @@ const HEADERS = [
 	'sos_defensive_rating_rank',
 	'noncon_sos',
 	'noncon_sos_rank'
-];
+] as const;
 
 type Header = (typeof HEADERS)[number];
 
 type TeamData = {
-	[key in Header]: string | number;
-};
+	[K in Header]: K extends 'team' | 'conference' | 'win_loss' ? string : number;
+} & { price: number };
 
 type KenpomData = Record<string, TeamData>;
 
@@ -47,18 +47,55 @@ export async function fetchKenpomRankings(): Promise<KenpomData> {
 			.children()
 			.each((i, td) => {
 				const tdContent = $(td).text().trim();
-				const header = HEADERS[i];
+				const header = HEADERS[i] as Header;
 
-				if (header.endsWith('rank')) teamInfo[header] = parseInt(tdContent);
-				else if (!isNaN(Number(tdContent))) teamInfo[header] = parseFloat(tdContent);
-				else if (header === 'team') teamInfo[header] = tdContent.replace(/[ 0-9]+$/g, '');
-				else teamInfo[header] = tdContent;
+				if (header === 'team' || header === 'conference' || header === 'win_loss') {
+					teamInfo[header] = tdContent;
+				} else if (header.endsWith('rank')) {
+					teamInfo[header] = parseInt(tdContent);
+				} else if (!isNaN(Number(tdContent))) {
+					teamInfo[header] = parseFloat(tdContent);
+				}
 			});
 
-		acc[teamInfo.team as string] = teamInfo;
+		teamInfo['price'] = getPrice(teamInfo);
+
+		acc[teamInfo.team] = teamInfo;
 
 		return acc;
 	}, {});
 
 	return teams;
+}
+
+export function getPrice(team: TeamData) {
+	let price = Math.max((100 * (team.net_rating + 5)) / 40, 0.01);
+
+	if (team.net_rating > 43) {
+		price += 100;
+	} else if (team.net_rating > 40) {
+		price += 50;
+	} else if (team.net_rating > 37) {
+		price += 15;
+	} else if (team.net_rating > 35) {
+		price += 5;
+	}
+
+	if (team.rank === 1) {
+		price += 25;
+	} else if (team.rank <= 3) {
+		price += 20;
+	} else if (team.rank <= 5) {
+		price += 15;
+	} else if (team.rank <= 10) {
+		price += 10;
+	} else if (team.rank <= 20) {
+		price += 5;
+	} else if (team.rank <= 30) {
+		price += 2.5;
+	}
+
+	price = Math.round(price * 100) / 100;
+
+	return price;
 }

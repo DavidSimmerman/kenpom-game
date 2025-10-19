@@ -1,7 +1,7 @@
 import { KenpomRankings } from '@/types/kenpom';
 import { useEffect, useRef, useState } from 'react';
 
-const API_DOMAIN = 'http://192.168.1.56:3015';
+const API_DOMAIN = import.meta.env.VITE_API_DOMAIN || 'http://localhost:3015';
 
 export default function useFetchKenpom() {
 	const responsePromise = useRef<Promise<void>>();

@@ -64,7 +64,9 @@ export default function RankingsList() {
 						<TableHeader className="sticky top-0 bg-secondary ">
 							<TableRow>
 								<TableHead
-									className={`capitalize hover:bg-muted/50 cursor-pointer text-center ${sorting === 'price' && 'underline text-white'}`}
+									className={`capitalize hover:bg-muted/50 cursor-pointer text-center ${
+										sorting === 'price' && 'underline text-white'
+									}`}
 									onClick={() => setSorting('price')}
 									key={`kp_header_item_price`}
 								>
@@ -72,7 +74,9 @@ export default function RankingsList() {
 								</TableHead>
 								{headers?.map(h => (
 									<TableHead
-										className={`capitalize hover:bg-muted/50 cursor-pointer text-center ${sorting === h && 'underline text-white'}`}
+										className={`capitalize hover:bg-muted/50 cursor-pointer text-center ${
+											sorting === h && 'underline text-white'
+										}`}
 										onClick={() => setSorting(h)}
 										key={`kp_header_item_${h}`}
 									>
@@ -92,7 +96,7 @@ export default function RankingsList() {
 											$&nbsp;
 											{team.price}
 										</span>
-										{Object.values(trendIconMap)[Math.floor(Math.random() * 3)]}
+										{/* {Object.values(trendIconMap)[Math.floor(Math.random() * 3)]} */}
 									</TableCell>
 									{Object.entries(team).map(([header, rank]) => {
 										if (header.endsWith('_rank') || header === 'price') return null;
