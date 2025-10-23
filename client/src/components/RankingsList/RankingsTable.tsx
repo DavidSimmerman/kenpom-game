@@ -1,16 +1,34 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { ScrollArea } from '../ui/scroll-area';
 import { KenpomTeam } from '@/types/kenpom';
-import { RankingsTableProps, KenpomTeamKey } from './types';
+import { KenpomTeamKey } from './types';
+import { useRankingsStore } from './useRankingsStore';
+import { filterTeams, sortTeams } from './utils';
 
-export default function RankingsTable({ teams, sorting, onSortChange }: RankingsTableProps) {
+export default function RankingsTable() {
+	const teamIndex = useRankingsStore(s => s.teamIndex);
+	const search = useRankingsStore(s => s.search);
+	const conferenceFilter = useRankingsStore(s => s.conferenceFilter);
+
+	const [sorting, setSorting] = useState<keyof KenpomTeam>();
+
+	const teams = useMemo(() => {
+		if (!teamIndex) return;
+
+		const allTeams = Object.values(teamIndex);
+		const filteredTeams = filterTeams({ teams: allTeams, search, conferenceFilter });
+		return sortTeams(filteredTeams, sorting);
+	}, [teamIndex, search, sorting, conferenceFilter]);
+
 	const headers = useMemo<KenpomTeamKey[]>(() => {
 		if (!teams || teams.length === 0) return [];
 		return Object.keys(teams[0] as KenpomTeam).filter((h): h is KenpomTeamKey => !h.endsWith('_rank') && h !== 'price');
 	}, [teams]);
 
-	return (
+	return teams?.length === 0 ? (
+		<div className="mx-auto my-8 text-neutral-400">No teams found</div>
+	) : (
 		<ScrollArea className="h-screen border w-fit min-w-full overflow-x-auto">
 			<Table>
 				<TableHeader className="sticky top-0 bg-secondary">
@@ -19,7 +37,7 @@ export default function RankingsTable({ teams, sorting, onSortChange }: Rankings
 							className={`capitalize hover:bg-neutral-700/40 cursor-pointer text-center ${
 								sorting === 'price' && 'underline text-white'
 							}`}
-							onClick={() => onSortChange('price')}
+							onClick={() => setSorting('price')}
 							key="kp_header_item_price"
 						>
 							$
@@ -29,7 +47,7 @@ export default function RankingsTable({ teams, sorting, onSortChange }: Rankings
 								className={`capitalize hover:bg-neutral-700/40 cursor-pointer text-center ${
 									sorting === h && 'underline text-white'
 								}`}
-								onClick={() => onSortChange(h)}
+								onClick={() => setSorting(h)}
 								key={`kp_header_item_${h}`}
 							>
 								{h.replaceAll('_', ' ')}

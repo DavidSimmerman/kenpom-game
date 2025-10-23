@@ -9,17 +9,27 @@ export function getWinLossPct(win_loss: WinLossRecord): number {
 	return wins / (wins + losses);
 }
 
-export function filterTeams(teams: KenpomTeam[], searchTerm?: string): KenpomTeam[] {
-	if (!searchTerm || !searchTerm.trim()) {
-		return teams;
+type FilterTeamsOptions = {
+	teams: KenpomTeam[];
+	search: string | undefined;
+	conferenceFilter: string[];
+};
+
+export function filterTeams({ teams, search, conferenceFilter }: FilterTeamsOptions): KenpomTeam[] {
+	if (search?.trim()) {
+		const fuse = new Fuse(teams, {
+			keys: ['team'],
+			threshold: 0.3
+		});
+
+		teams = fuse.search(search).map(result => result.item);
 	}
 
-	const fuse = new Fuse(teams, {
-		keys: ['team'],
-		threshold: 0.3
-	});
+	if (conferenceFilter.length) {
+		teams = teams.filter(team => conferenceFilter.includes(team.conference));
+	}
 
-	return fuse.search(searchTerm).map(result => result.item);
+	return teams;
 }
 
 export function sortTeams(teams: KenpomTeam[], sorting?: keyof KenpomTeam): KenpomTeam[] {
