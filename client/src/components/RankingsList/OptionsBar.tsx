@@ -3,7 +3,7 @@ import { IoSearch } from 'react-icons/io5';
 import { FaFilter } from 'react-icons/fa';
 import { Button } from '../ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import { useRankingsStore } from './useRankingsStore';
+import { useRankingsStore } from '../../stores/useRankingsStore';
 import { Checkbox } from '../ui/checkbox';
 import { Separator } from '@radix-ui/react-separator';
 
@@ -26,7 +26,7 @@ export default function OptionsBar() {
 	}
 
 	return (
-		<div className="bg-secondary pt-2 z-10 flex ">
+		<div className="bg-secondary pt-2 z-10 flex w-full">
 			<div className="flex ml-4">
 				<IoSearch className="text-neutral-600 my-auto mr-4" size={20} />
 				<Input

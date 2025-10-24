@@ -28,7 +28,7 @@ type Header = (typeof HEADERS)[number];
 
 type TeamData = {
 	[K in Header]: K extends 'team' | 'conference' | 'win_loss' ? string : number;
-} & { price: number };
+} & { price: number; team_key: string };
 
 type KenpomData = Record<string, TeamData>;
 
@@ -59,8 +59,12 @@ export async function fetchKenpomRankings(): Promise<KenpomData> {
 			});
 
 		teamInfo['price'] = getPrice(teamInfo);
+		teamInfo['team_key'] = teamInfo.team
+			.toLowerCase()
+			.replaceAll(' ', '_')
+			.replaceAll(/[^a-z_]/g, '');
 
-		acc[teamInfo.team] = teamInfo;
+		acc[teamInfo.team_key] = teamInfo;
 
 		return acc;
 	}, {});

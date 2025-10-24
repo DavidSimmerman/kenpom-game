@@ -6,6 +6,7 @@ export interface KenpomTeam {
 	rank: number;
 	name: string;
 	team: string;
+	team_key: string;
 	conference: string;
 	win_loss: WinLossRecord;
 	net_rating: number;

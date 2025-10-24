@@ -3,13 +3,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { ScrollArea } from '../ui/scroll-area';
 import { KenpomTeam } from '@/types/kenpom';
 import { KenpomTeamKey } from './types';
-import { useRankingsStore } from './useRankingsStore';
+import { useRankingsStore } from '../../stores/useRankingsStore';
 import { filterTeams, sortTeams } from './utils';
+import { useTeamStore } from '@/stores/useTeamStore';
 
 export default function RankingsTable() {
 	const teamIndex = useRankingsStore(s => s.teamIndex);
 	const search = useRankingsStore(s => s.search);
 	const conferenceFilter = useRankingsStore(s => s.conferenceFilter);
+	const setTeam = useTeamStore(s => s.setTeam);
 
 	const [sorting, setSorting] = useState<keyof KenpomTeam>();
 
@@ -23,7 +25,9 @@ export default function RankingsTable() {
 
 	const headers = useMemo<KenpomTeamKey[]>(() => {
 		if (!teams || teams.length === 0) return [];
-		return Object.keys(teams[0] as KenpomTeam).filter((h): h is KenpomTeamKey => !h.endsWith('_rank') && h !== 'price');
+		return Object.keys(teams[0] as KenpomTeam).filter(
+			(h): h is KenpomTeamKey => !h.endsWith('_rank') && h !== 'price' && h !== 'team_key'
+		);
 	}, [teams]);
 
 	return teams?.length === 0 ? (
@@ -57,7 +61,11 @@ export default function RankingsTable() {
 				</TableHeader>
 				<TableBody>
 					{teams?.map(team => (
-						<TableRow key={`kp_rankings_table_team_${team.team}`}>
+						<TableRow
+							onClick={() => setTeam(team.team_key)}
+							key={`kp_rankings_table_team_${team.team}`}
+							className="cursor-pointer"
+						>
 							<TableCell
 								className="text-center flex w-full justify-between items-center"
 								key={`kp_rankings_table_team_${team.team}_price`}
@@ -66,7 +74,7 @@ export default function RankingsTable() {
 								<span>{team.price.toFixed(2)}</span>
 							</TableCell>
 							{Object.entries(team).map(([header, rank]) => {
-								if (header.endsWith('_rank') || header === 'price') return null;
+								if (header.endsWith('_rank') || header === 'price' || header === 'team_key') return null;
 
 								const rankHeader = (header + '_rank') as keyof KenpomTeam;
 

@@ -3,7 +3,7 @@ import { fetchKenpomRankings } from '../services/kenpomService.js';
 
 const SAVE_TEAM_QUERY = `
 		INSERT INTO kenpom_rankings (
-			rank, team, conference, win_loss,
+			rank, team, team_key, conference, win_loss,
 			net_rating, offensive_rating, offensive_rating_rank,
 			defensive_rating, defensive_rating_rank,
 			adjusted_tempo, adjusted_tempo_rank,
@@ -13,15 +13,15 @@ const SAVE_TEAM_QUERY = `
 			sos_defensive_rating, sos_defensive_rating_rank,
 			noncon_sos, noncon_sos_rank
 		) VALUES (
-			$1, $2, $3, $4, 
-            $5, $6, $7, 
-            $8, $9, 
-            $10, $11, 
-            $12, $13, 
-            $14, $15, 
-            $16, $17, 
-            $18, $19, 
-            $20, $21
+			$1, $2, $3, $4, $5,
+            $6, $7, $8,
+            $9, $10,
+            $11, $12,
+            $13, $14,
+            $15, $16,
+            $17, $18,
+            $19, $20,
+            $21, $22
 		)
 	`;
 
@@ -37,6 +37,7 @@ export async function saveKenpom() {
 				params: [
 					team.rank,
 					team.team,
+					team.team_key,
 					team.conference,
 					team.win_loss,
 					team.net_rating,
