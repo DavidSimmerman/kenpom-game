@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { fetchKenpomRankings } from '../services/kenpomService.js';
+import { fetchKenpomRankings, getPrice } from '../services/kenpomService.js';
 import { PostgresService } from '../services/dbService.js';
 
 const db = PostgresService.getInstance();
@@ -36,7 +36,7 @@ export async function getKenpomTeam(req: Request, res: Response) {
 
 		res.json({
 			...kenpomRankings[teamKey],
-			history: queryResults
+			history: queryResults.map(h => ({ ...h, price: getPrice(h) }))
 		});
 	} catch (error) {
 		console.error('Error fetching team history:', error);
