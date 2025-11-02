@@ -4,7 +4,10 @@ import http from 'http';
 import dotenv from 'dotenv';
 import cron from 'node-cron';
 import kenpomRoutes from './routes/kenpom.js';
+import authRoutes from './routes/auth.js';
 import { saveKenpom } from './jobs/dailyKenpom.js';
+import './config/passport.js';
+import passport from 'passport';
 
 dotenv.config();
 
@@ -21,12 +24,17 @@ cron.schedule('0 6 * * *', async () => {
 const app = express();
 const PORT = parseInt(process.env.PORT ?? '3000');
 
-app.use(express.json());
 app.use(
 	cors({
-		origin: ['http://localhost:5173']
+		origin: process.env.FRONTEND_URL,
+		credentials: true
 	})
 );
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(passport.initialize());
+
+app.use('/auth', authRoutes);
 
 app.use('/kenpom', kenpomRoutes);
 
@@ -40,6 +48,7 @@ app.get('/downloadkp', async (_req, res) => {
 
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 	console.error('Error:', err.message);
+	console.error('Full error:', err);
 
 	res.status(500).json({
 		error: 'Internal Server Error',

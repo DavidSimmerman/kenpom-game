@@ -6,12 +6,17 @@ import { useMemo } from 'react';
 import { Spinner } from '../ui/spinner';
 import { Button } from '../ui/button';
 import { BsGraphUpArrow, BsGraphDownArrow } from 'react-icons/bs';
+import GoogleSignIn from '../Auth/GoogleSignIn';
+import { useAuthStore } from '@/stores/useAuthStore';
 
 export default function TeamCard() {
 	const teamName = useTeamStore(s => s.teamName);
 	const teamData = useTeamStore(s => s.teamData);
 	const isLoading = useTeamStore(s => s.isLoading);
 	const setTeam = useTeamStore(s => s.setTeam);
+
+	const user = useAuthStore(s => s.user);
+	const isAuthenticated = useAuthStore(s => s.isAuthenticated);
 
 	const chartConfig = {
 		netRating: {
@@ -44,7 +49,6 @@ export default function TeamCard() {
 		const { active, payload } = props;
 		if (!active || !payload) return null;
 
-		// Reorder to show price first
 		const orderedPayload = [
 			payload.find((p: any) => p.dataKey === 'price'),
 			payload.find((p: any) => p.dataKey === 'net_rating'),
@@ -93,8 +97,8 @@ export default function TeamCard() {
 									<Line
 										dataKey="net_rating"
 										type="linear"
-										stroke="oklch(68.5% 0.169 237.323 / .3)"
-										strokeWidth={2}
+										stroke="oklch(54.6% 0.245 262.881 / .7)"
+										strokeWidth={1}
 										dot={false}
 										yAxisId="netRating"
 									/>
@@ -102,8 +106,8 @@ export default function TeamCard() {
 									<Line
 										dataKey="rank"
 										type="linear"
-										stroke="oklch(57.7% 0.245 27.325 / .3)"
-										strokeWidth={2}
+										stroke="oklch(55.8% 0.288 302.321 / .7)"
+										strokeWidth={1}
 										dot={false}
 										yAxisId="ranks"
 									/>
@@ -111,7 +115,7 @@ export default function TeamCard() {
 									<Line
 										dataKey="price"
 										type="linear"
-										stroke="oklch(72.3% 0.219 149.579)"
+										stroke="oklch(62.7% 0.194 149.214)"
 										strokeWidth={3}
 										dot={false}
 										yAxisId="price"
@@ -145,13 +149,22 @@ export default function TeamCard() {
 							</span>
 						</div>
 						<div className="mt-6 flex gap-3 w-full just">
-							<Button className="w-[20%] ml-auto text-green-600 bg-transparent hover:bg-green-600/30 border-2 border-green-600/50">
-								Buy <BsGraphUpArrow />
-							</Button>
-							<Button className="w-[20%] text-red-600 bg-transparent hover:bg-red-600/30 border-2 border-red-600/50">
-								Short
-								<BsGraphDownArrow />
-							</Button>
+							{isAuthenticated && user ? (
+								<>
+									<Button className="w-[20%] ml-auto text-green-600 bg-transparent hover:bg-green-600/30 border-2 border-green-600/50">
+										Buy <BsGraphUpArrow />
+									</Button>
+									<Button className="w-[20%] text-red-600 bg-transparent hover:bg-red-600/30 border-2 border-red-600/50">
+										Short
+										<BsGraphDownArrow />
+									</Button>
+								</>
+							) : (
+								<div className="ml-auto">
+									<GoogleSignIn />
+								</div>
+							)}
+
 							<DialogClose className="w-[20%] mr-auto">
 								<Button className="w-full text-neutral-500 bg-transparent hover:bg-neutral-500/30 border-2 border-neutral-500/50">
 									Cancel

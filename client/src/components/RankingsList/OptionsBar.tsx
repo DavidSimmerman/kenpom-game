@@ -4,8 +4,12 @@ import { FaFilter } from 'react-icons/fa';
 import { Button } from '../ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { useRankingsStore } from '../../stores/useRankingsStore';
+import { useAuthStore } from '../../stores/useAuthStore';
 import { Checkbox } from '../ui/checkbox';
 import { Separator } from '@radix-ui/react-separator';
+import { AvatarImage, Avatar, AvatarFallback } from '../ui/avatar';
+import { GrCircleQuestion } from 'react-icons/gr';
+import GoogleSignIn from '../Auth/GoogleSignIn';
 
 const POWER_CONFERENCES = ['ACC', 'B10', 'B12', 'BE', 'SEC'];
 
@@ -16,6 +20,10 @@ export default function OptionsBar() {
 
 	const conferenceFilter = useRankingsStore(s => s.conferenceFilter);
 	const setConferenceFilter = useRankingsStore(s => s.setConferenceFilter);
+
+	const user = useAuthStore(s => s.user);
+	const isAuthenticated = useAuthStore(s => s.isAuthenticated);
+	const logout = useAuthStore(s => s.logout);
 
 	function toggleSelectAllConfs() {
 		if (conferenceFilter.length === conferences.length) {
@@ -36,7 +44,10 @@ export default function OptionsBar() {
 					onChange={e => setSearch(e.target.value)}
 				/>
 			</div>
-			<div className="ml-auto mr-4">
+			<div className="ml-auto mr-4 flex gap-2">
+				<div className="h-full bg-transparent hover:bg-neutral-700/40 aspect-square rounded-lg flex">
+					<GrCircleQuestion className="text-neutral-600 m-auto w-[60%] h-[60%]" />
+				</div>
 				<Popover>
 					<PopoverTrigger className="h-full bg-transparent hover:bg-neutral-700/40 aspect-square rounded-lg flex">
 						<FaFilter className="text-neutral-600 m-auto" />
@@ -63,6 +74,29 @@ export default function OptionsBar() {
 						</div>
 					</PopoverContent>
 				</Popover>
+				{isAuthenticated && user ? (
+					<Popover>
+						<PopoverTrigger>
+							<Avatar>
+								<AvatarImage src={user.picture || ''}></AvatarImage>
+								<AvatarFallback className="bg-neutral-600">
+									{user.username?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
+								</AvatarFallback>
+							</Avatar>
+						</PopoverTrigger>
+						<PopoverContent className="bg-neutral-700 mr-4 text-neutral-300 w-fit p-4">
+							<div className="flex flex-col gap-2">
+								<div className="text-sm text-neutral-400">{user.email}</div>
+								{user.username && <div className="font-semibold">{user.username}</div>}
+								<Button onClick={logout} className="mt-2 bg-neutral-600 hover:bg-neutral-500">
+									Sign Out
+								</Button>
+							</div>
+						</PopoverContent>
+					</Popover>
+				) : (
+					<GoogleSignIn />
+				)}
 			</div>
 		</div>
 	);
