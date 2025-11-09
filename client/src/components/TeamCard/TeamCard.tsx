@@ -26,19 +26,7 @@ export default function TeamCard() {
 	};
 
 	const ratingHistory = useMemo(() => {
-		// Generate test data for 10 days
-		const testData = Array.from({ length: 10 }, (_, i) => {
-			const date = new Date();
-			date.setDate(date.getDate() - (9 - i));
-			return {
-				date: date.toISOString().split('T')[0],
-				datetime: date,
-				rank: Math.floor(Math.random() * 50) + 1,
-				net_rating: Math.random() * 30 + 5,
-				price: Math.random() * 100 + 50
-			};
-		});
-		return testData;
+		return teamData?.history.map(history => ({ ...history, datetime: new Date(history.date) }));
 	}, [teamData]);
 
 	const prices = ratingHistory?.map(h => h.price) || [];

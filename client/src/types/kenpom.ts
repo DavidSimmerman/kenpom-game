@@ -27,6 +27,14 @@ export interface KenpomTeam {
 	noncon_sos: number;
 	noncon_sos_rank: number;
 	price: number;
+	history: TeamHistoryEntry[];
+}
+
+export interface TeamHistoryEntry {
+	date: string;
+	net_rating: number;
+	price: number;
+	rank: number;
 }
 
 export type WinLossRecord = `${number}-${number}`;

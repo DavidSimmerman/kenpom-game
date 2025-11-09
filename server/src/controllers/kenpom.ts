@@ -16,12 +16,12 @@ export async function getKenpomTeam(req: Request, res: Response) {
 	const query = `
 		SELECT
 			rank,
-			net_rating,
+			net_rating::float as net_rating,
 			TO_CHAR(date, 'YYYY-MM-DD') as date
 		FROM kenpom_rankings
 		WHERE team_key = $1
 			AND date >= NOW() - INTERVAL '30 days'
-		ORDER BY date DESC
+		ORDER BY date ASC
 	`;
 
 	try {
