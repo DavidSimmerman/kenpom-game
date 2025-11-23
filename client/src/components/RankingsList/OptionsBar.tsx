@@ -140,7 +140,7 @@ function HistoryPopover() {
 			return { activeTransactions, pastTransactions };
 		}
 
-		const sortedTransactions = transactions.sort((a, b) => new Date(a.updated_at) - new Date(b.updated_at));
+		const sortedTransactions = transactions.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
 		sortedTransactions.forEach(t => {
 			let profit = (t.sell_price ?? t.current_price) * t.shares - t.buy_price * t.shares;
 
@@ -174,7 +174,7 @@ function HistoryPopover() {
 			}
 		});
 
-		return { activeTransactions, pastTransactions: [] };
+		return { activeTransactions, pastTransactions };
 	}, [transactions]);
 
 	return (
