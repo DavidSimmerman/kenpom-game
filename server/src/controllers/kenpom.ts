@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
-import { fetchKenpomRankings, getPrice } from '../services/kenpomService.js';
+import { fetchKenpomRankings, getTeam } from '../services/kenpomService.js';
 import { PostgresService } from '../services/dbService.js';
+import { BadRequestError } from 'src/errors/Errors.js';
 
 const db = PostgresService.getInstance();
 
@@ -13,33 +14,16 @@ export async function getKenpomRankings(_req: Request, res: Response) {
 export async function getKenpomTeam(req: Request, res: Response) {
 	const teamKey = req.params.teamKey as string;
 
-	const query = `
-		SELECT
-			rank,
-			net_rating::float as net_rating,
-			TO_CHAR(date, 'YYYY-MM-DD') as date
-		FROM kenpom_rankings
-		WHERE team_key = $1
-			AND date >= NOW() - INTERVAL '30 days'
-		ORDER BY date ASC
-	`;
-
 	try {
-		const queryPromise = db.query(query, [teamKey]);
-		const kpPromise = fetchKenpomRankings();
+		const team = await getTeam(teamKey);
 
-		const [queryResults, kenpomRankings] = await Promise.all([queryPromise, kpPromise]);
-
-		if (!Object.keys(kenpomRankings).includes(teamKey)) {
-			return res.status(404).json({ error: `No team ${teamKey} found` });
+		res.json(team);
+	} catch (error: any) {
+		if (error instanceof BadRequestError) {
+			return res.status(400).json({ error: error.message });
 		}
 
-		res.json({
-			...kenpomRankings[teamKey],
-			history: queryResults.map(h => ({ ...h, price: getPrice(h) }))
-		});
-	} catch (error) {
-		console.error('Error fetching team history:', error);
+		console.error('Error fetching team history:', error.message);
 		res.status(500).json({ error: 'Failed to fetch team history' });
 	}
 }

@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import cron from 'node-cron';
 import kenpomRoutes from './routes/kenpom.js';
 import authRoutes from './routes/auth.js';
+import transactionRoutes from './routes/transactions.js';
 import { saveKenpom } from './jobs/dailyKenpom.js';
 import './config/passport.js';
 import passport from 'passport';
@@ -37,6 +38,8 @@ app.use(passport.initialize());
 app.use('/auth', authRoutes);
 
 app.use('/kenpom', kenpomRoutes);
+
+app.use('/transactions', transactionRoutes);
 
 app.get('/status', (_req, res) => {
 	res.send('healthy');

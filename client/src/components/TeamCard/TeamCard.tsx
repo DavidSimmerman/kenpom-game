@@ -2,21 +2,19 @@ import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
 import { useTeamStore } from '../../stores/useTeamStore';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../ui/chart';
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Spinner } from '../ui/spinner';
 import { Button } from '../ui/button';
 import { BsGraphUpArrow, BsGraphDownArrow } from 'react-icons/bs';
 import GoogleSignIn from '../Auth/GoogleSignIn';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { useTransactionStore } from '@/stores/useTransactionStore';
 
 export default function TeamCard() {
 	const teamName = useTeamStore(s => s.teamName);
 	const teamData = useTeamStore(s => s.teamData);
 	const isLoading = useTeamStore(s => s.isLoading);
 	const setTeam = useTeamStore(s => s.setTeam);
-
-	const user = useAuthStore(s => s.user);
-	const isAuthenticated = useAuthStore(s => s.isAuthenticated);
 
 	const chartConfig = {
 		netRating: {
@@ -136,32 +134,119 @@ export default function TeamCard() {
 								<p className="font-bold">{teamData.defensive_rating}</p>
 							</span>
 						</div>
-						<div className="mt-6 flex gap-3 w-full just">
-							{isAuthenticated && user ? (
-								<>
-									<Button className="w-[20%] ml-auto text-green-600 bg-transparent hover:bg-green-600/30 border-2 border-green-600/50">
-										Buy <BsGraphUpArrow />
-									</Button>
-									<Button className="w-[20%] text-red-600 bg-transparent hover:bg-red-600/30 border-2 border-red-600/50">
-										Short
-										<BsGraphDownArrow />
-									</Button>
-								</>
-							) : (
-								<div className="ml-auto">
-									<GoogleSignIn />
-								</div>
-							)}
-
-							<DialogClose className="w-[20%] mr-auto">
-								<Button className="w-full text-neutral-500 bg-transparent hover:bg-neutral-500/30 border-2 border-neutral-500/50">
-									Cancel
-								</Button>
-							</DialogClose>
-						</div>
+						<TeamCardButtons />
 					</div>
 				) : null}
 			</DialogContent>
 		</Dialog>
+	);
+}
+
+function TeamCardButtons() {
+	const teamName = useTeamStore(s => s.teamName);
+	const teamData = useTeamStore(s => s.teamData);
+
+	const transactions = useTransactionStore(s => s.transactions);
+
+	const { activeTransaction, profit } = useMemo(() => {
+		let profit;
+		const activeTransaction = transactions.find(t => t.team_key === teamData?.team_key && !t.sell_price);
+
+		if (activeTransaction) {
+			profit =
+				activeTransaction.current_price * activeTransaction.shares -
+				activeTransaction.buy_price * activeTransaction.shares;
+			if (!activeTransaction.is_buy) {
+				profit *= -1;
+			}
+		}
+
+		return { activeTransaction, profit: profit?.toFixed(2) };
+	}, [transactions, teamData]);
+
+	const buyTeam = useTransactionStore(s => s.buyTeam);
+	const sellTeam = useTransactionStore(s => s.sellTeam);
+
+	const user = useAuthStore(s => s.user);
+	const token = useAuthStore(s => s.token);
+	const isAuthenticated = useAuthStore(s => s.isAuthenticated);
+
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+
+	useEffect(() => {
+		setError(null);
+	}, [teamName]);
+
+	const handleTransaction = async (action: 'buy' | 'short' | 'sell', shares = 1) => {
+		if (!user || !token || !teamData) return;
+
+		setIsSubmitting(true);
+		setError(null);
+
+		try {
+			if (action === 'sell') {
+				await sellTeam(teamData.team_key);
+			} else {
+				await buyTeam(teamData.team_key, action === 'buy', shares);
+			}
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'An error occurred');
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+	return (
+		<>
+			{error && <div className="mt-4 p-3 bg-red-500/10 border border-red-500/50 rounded text-red-600 text-sm">{error}</div>}
+			<div className="mt-6 flex gap-3 w-full just">
+				{isAuthenticated && user ? (
+					activeTransaction && profit != null ? (
+						<Button
+							onClick={() => handleTransaction('sell')}
+							disabled={isSubmitting}
+							className={`min-w-[20%] ml-auto ${
+								parseInt(profit) === 0
+									? 'text-neutral-200 border-neutral-200/50 hover:bg-neutral-200/30'
+									: parseInt(profit) > 0
+									? 'text-green-600 border-green-600/50 hover:bg-green-600/30'
+									: 'text-red-500 border-red-600/50 hover:bg-red-600/30'
+							} bg-transparent  border-2  disabled:opacity-50`}
+						>
+							{isSubmitting ? 'Processing...' : `Sell for ${parseInt(profit) < 0 ? '-' : '+'}$${profit}`}
+						</Button>
+					) : (
+						<>
+							<Button
+								onClick={() => handleTransaction('buy')}
+								disabled={isSubmitting}
+								className="w-[20%] ml-auto text-green-600 bg-transparent hover:bg-green-600/30 border-2 border-green-600/50 disabled:opacity-50"
+							>
+								{isSubmitting ? 'Processing...' : 'Buy'} <BsGraphUpArrow />
+							</Button>
+							<Button
+								onClick={() => handleTransaction('short')}
+								disabled={isSubmitting}
+								className="w-[20%] text-red-600 bg-transparent hover:bg-red-600/30 border-2 border-red-600/50 disabled:opacity-50"
+							>
+								{isSubmitting ? 'Processing...' : 'Short'}
+								<BsGraphDownArrow />
+							</Button>
+						</>
+					)
+				) : (
+					<div className="ml-auto">
+						<GoogleSignIn />
+					</div>
+				)}
+
+				<DialogClose className="w-[20%] mr-auto">
+					<Button className="w-full text-neutral-500 bg-transparent hover:bg-neutral-500/30 border-2 border-neutral-500/50">
+						Cancel
+					</Button>
+				</DialogClose>
+			</div>
+		</>
 	);
 }

@@ -1,4 +1,8 @@
 import * as cheerio from 'cheerio';
+import { PostgresService } from './dbService';
+import { BadRequestError } from 'src/errors/Errors';
+
+const db = PostgresService.getInstance();
 
 const HEADERS = [
 	'rank',
@@ -58,7 +62,7 @@ export async function fetchKenpomRankings(): Promise<KenpomData> {
 				}
 			});
 
-		teamInfo['price'] = getPrice(teamInfo);
+		teamInfo['price'] = getPrice(teamInfo.net_rating, teamInfo.rank);
 		teamInfo['team_key'] = teamInfo.team
 			.toLowerCase()
 			.replaceAll(' ', '_')
@@ -72,34 +76,66 @@ export async function fetchKenpomRankings(): Promise<KenpomData> {
 	return teams;
 }
 
-export function getPrice(team: TeamData) {
-	let price = Math.max((100 * (team.net_rating + 5)) / 40, 0.01);
+export function getPrice(net_rating: number, rank: number) {
+	let price = Math.max((100 * (net_rating + 5)) / 40, 0.01);
 
-	if (team.net_rating > 43) {
+	if (net_rating > 43) {
 		price += 100;
-	} else if (team.net_rating > 40) {
+	} else if (net_rating > 40) {
 		price += 50;
-	} else if (team.net_rating > 37) {
+	} else if (net_rating > 37) {
 		price += 15;
-	} else if (team.net_rating > 35) {
+	} else if (net_rating > 35) {
 		price += 5;
 	}
 
-	if (team.rank === 1) {
+	if (rank === 1) {
 		price += 25;
-	} else if (team.rank <= 3) {
+	} else if (rank <= 3) {
 		price += 20;
-	} else if (team.rank <= 5) {
+	} else if (rank <= 5) {
 		price += 15;
-	} else if (team.rank <= 10) {
+	} else if (rank <= 10) {
 		price += 10;
-	} else if (team.rank <= 20) {
+	} else if (rank <= 20) {
 		price += 5;
-	} else if (team.rank <= 30) {
+	} else if (rank <= 30) {
 		price += 2.5;
 	}
 
 	price = Math.round(price * 100) / 100;
 
 	return price;
+}
+
+export async function getTeam(teamKey: string) {
+	const query = `
+		SELECT
+			rank,
+			net_rating::float as net_rating,
+			TO_CHAR(date, 'YYYY-MM-DD') as date
+		FROM kenpom_rankings
+		WHERE team_key = $1
+			AND date >= NOW() - INTERVAL '30 days'
+		ORDER BY date ASC
+	`;
+
+	try {
+		const queryPromise = db.query(query, [teamKey]);
+		const kpPromise = fetchKenpomRankings();
+
+		const [queryResults, kenpomRankings] = await Promise.all([queryPromise, kpPromise]);
+
+		if (!Object.keys(kenpomRankings).includes(teamKey)) {
+			throw new BadRequestError(`No team ${teamKey} found`);
+		}
+
+		return {
+			...kenpomRankings[teamKey],
+			history: queryResults.map(h => ({ ...h, price: getPrice(h.net_rating, h.rank) }))
+		};
+	} catch (error) {
+		console.error('Error fetching team history:', error);
+		throw new Error('Failed to fetch team history');
+	}
 }
