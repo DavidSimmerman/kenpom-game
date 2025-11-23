@@ -174,7 +174,7 @@ function HistoryPopover() {
 			}
 		});
 
-		return { activeTransactions, pastTransactions };
+		return { activeTransactions, pastTransactions: [] };
 	}, [transactions]);
 
 	return (
@@ -204,6 +204,9 @@ function HistoryPopover() {
 						</TableHeader>
 						<TableBody>{activeTransactions.map(t => t)}</TableBody>
 					</Table>
+					{!activeTransactions.length && (
+						<div className="text-center text-sm my-3 text-neutral-400">No current investments</div>
+					)}
 
 					<div>History</div>
 					<Table className="text-center">
@@ -219,6 +222,9 @@ function HistoryPopover() {
 						</TableHeader>
 						<TableBody>{pastTransactions.map(t => t)}</TableBody>
 					</Table>
+					{!pastTransactions.length && (
+						<div className="text-center text-sm my-3 text-neutral-400">No investment history</div>
+					)}
 				</PopoverContent>
 			</Popover>
 		))
