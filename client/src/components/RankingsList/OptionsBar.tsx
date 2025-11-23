@@ -51,6 +51,8 @@ function FilterPopover() {
 	const conferences = useRankingsStore(s => s.conferences);
 	const conferenceFilter = useRankingsStore(s => s.conferenceFilter);
 	const setConferenceFilter = useRankingsStore(s => s.setConferenceFilter);
+	const investedFilter = useRankingsStore(s => s.investedFilter);
+	const toggleInvestedFilter = useRankingsStore(s => s.toggleInvestedFilter);
 
 	function toggleSelectAllConfs() {
 		if (conferenceFilter.length === conferences.length) {
@@ -66,6 +68,18 @@ function FilterPopover() {
 				<FaFilter className="text-neutral-600 m-auto" />
 			</PopoverTrigger>
 			<PopoverContent className="bg-neutral-700 mr-4 text-neutral-300 text-xl p-5 w-fit">
+				<div className="text-2xl font-bold mb-2 text-neutral-200">Currently Invested In</div>
+				<div className="grid grid-cols-[auto_auto_auto] gap-y-1 gap-x-6 mb-4">
+					<div className="flex gap-2 cursor-pointer" onClick={() => toggleInvestedFilter('yes')}>
+						<Checkbox checked={investedFilter.yes} className="my-auto" />
+						Yes
+					</div>
+					<div className="flex gap-2 cursor-pointer" onClick={() => toggleInvestedFilter('no')}>
+						<Checkbox checked={investedFilter.no} className="my-auto" />
+						No
+					</div>
+				</div>
+
 				<div className="text-2xl font-bold mb-2 text-neutral-200">Conferences</div>
 				<div className="grid grid-cols-[auto_auto_auto] gap-y-1 gap-x-6">
 					{POWER_CONFERENCES.map(conf => (

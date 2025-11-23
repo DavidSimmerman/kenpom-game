@@ -10,10 +10,12 @@ interface RankingsState {
 	search: string | undefined;
 	setSearch: (searchValue: string | undefined) => void;
 	conferenceFilter: string[];
+	investedFilter: { yes: boolean; no: boolean };
+	toggleInvestedFilter: (key: 'yes' | 'no') => void;
 	setConferenceFilter: (conferences: string[]) => void;
 }
 
-export const useRankingsStore = create<RankingsState>(set => {
+export const useRankingsStore = create<RankingsState>((set, get) => {
 	fetchKenpomRankings().then(teamIndex => {
 		const conferences = Array.from(new Set(Object.values(teamIndex).map(team => team.conference))).sort();
 		set({
@@ -23,6 +25,11 @@ export const useRankingsStore = create<RankingsState>(set => {
 		});
 	});
 
+	function toggleInvestedFilter(key: 'yes' | 'no') {
+		const currentState = get().investedFilter;
+		set({ investedFilter: { ...currentState, [key]: !currentState[key] } });
+	}
+
 	return {
 		teamIndex: undefined,
 		conferences: [],
@@ -30,6 +37,8 @@ export const useRankingsStore = create<RankingsState>(set => {
 		search: undefined,
 		setSearch: (searchValue: string | undefined) => set({ search: searchValue }),
 		conferenceFilter: [],
+		investedFilter: { yes: true, no: true },
+		toggleInvestedFilter,
 		setConferenceFilter: (conferences: string[]) => set({ conferenceFilter: conferences })
 	};
 });

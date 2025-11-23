@@ -6,12 +6,16 @@ import { KenpomTeamKey } from './types';
 import { useRankingsStore } from '../../stores/useRankingsStore';
 import { filterTeams, sortTeams } from './utils';
 import { useTeamStore } from '@/stores/useTeamStore';
+import { HiCurrencyDollar } from 'react-icons/hi';
+import { useTransactionStore } from '@/stores/useTransactionStore';
 
 export default function RankingsTable() {
 	const teamIndex = useRankingsStore(s => s.teamIndex);
 	const search = useRankingsStore(s => s.search);
 	const conferenceFilter = useRankingsStore(s => s.conferenceFilter);
+	const investedFilter = useRankingsStore(s => s.investedFilter);
 	const setTeam = useTeamStore(s => s.setTeam);
+	const transactions = useTransactionStore(s => s.transactions);
 
 	const [sorting, setSorting] = useState<keyof KenpomTeam>();
 
@@ -19,9 +23,9 @@ export default function RankingsTable() {
 		if (!teamIndex) return;
 
 		const allTeams = Object.values(teamIndex);
-		const filteredTeams = filterTeams({ teams: allTeams, search, conferenceFilter });
+		const filteredTeams = filterTeams({ teams: allTeams, search, conferenceFilter, investedFilter });
 		return sortTeams(filteredTeams, sorting);
-	}, [teamIndex, search, sorting, conferenceFilter]);
+	}, [teamIndex, search, sorting, conferenceFilter, investedFilter]);
 
 	const headers = useMemo<KenpomTeamKey[]>(() => {
 		if (!teams || teams.length === 0) return [];
@@ -64,7 +68,7 @@ export default function RankingsTable() {
 						<TableRow
 							onClick={() => setTeam(team.team_key)}
 							key={`kp_rankings_table_team_${team.team}`}
-							className="cursor-pointer"
+							className="cursor-pointer text-base"
 						>
 							<TableCell
 								className="text-center flex w-full justify-between items-center"
@@ -83,14 +87,20 @@ export default function RankingsTable() {
 										className="text-center whitespace-nowrap"
 										key={`kp_rankings_table_team_${team.team}_${header}`}
 									>
-										{team[rankHeader] ? (
-											<>
-												{rank}
-												<span className="ml-1 text-xs text-gray-600">{team[rankHeader]}</span>
-											</>
-										) : (
-											rank
-										)}
+										<div className="flex items-center justify-center gap-1">
+											{team[rankHeader] ? (
+												<>
+													{rank}
+													<span className="ml-1 text-xs text-gray-600">{team[rankHeader]}</span>
+												</>
+											) : (
+												rank
+											)}
+											{header === 'team' &&
+												transactions.find(t => t.team_key === team.team_key && !t.sell_rank) && (
+													<HiCurrencyDollar className="text-blue-500 size-4" />
+												)}
+										</div>
 									</TableCell>
 								);
 							})}

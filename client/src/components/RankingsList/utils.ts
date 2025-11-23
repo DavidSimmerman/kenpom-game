@@ -1,3 +1,4 @@
+import { useTransactionStore } from '@/stores/useTransactionStore';
 import { KenpomTeam, WinLossRecord } from '@/types/kenpom';
 import Fuse from 'fuse.js';
 
@@ -13,9 +14,10 @@ type FilterTeamsOptions = {
 	teams: KenpomTeam[];
 	search: string | undefined;
 	conferenceFilter: string[];
+	investedFilter: { yes: boolean; no: boolean };
 };
 
-export function filterTeams({ teams, search, conferenceFilter }: FilterTeamsOptions): KenpomTeam[] {
+export function filterTeams({ teams, search, conferenceFilter, investedFilter }: FilterTeamsOptions): KenpomTeam[] {
 	if (search?.trim()) {
 		const fuse = new Fuse(teams, {
 			keys: ['team'],
@@ -27,6 +29,18 @@ export function filterTeams({ teams, search, conferenceFilter }: FilterTeamsOpti
 
 	if (conferenceFilter.length) {
 		teams = teams.filter(team => conferenceFilter.includes(team.conference));
+	}
+
+	if (!investedFilter.yes || !investedFilter.no) {
+		const currentlyInvestedTeams = useTransactionStore
+			.getState()
+			.transactions.filter(t => !t.sell_rank)
+			.map(t => t.team_key);
+		teams = teams.filter(
+			t =>
+				(investedFilter.yes && currentlyInvestedTeams.includes(t.team_key)) ||
+				(investedFilter.no && !currentlyInvestedTeams.includes(t.team_key))
+		);
 	}
 
 	return teams;
