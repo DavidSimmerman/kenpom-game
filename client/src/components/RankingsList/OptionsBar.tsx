@@ -129,6 +129,7 @@ function HistoryPopover() {
 	const transactionsLoading = useTransactionStore(s => s.isLoading);
 	const transactions = useTransactionStore(s => s.transactions);
 	const setTeam = useTeamStore(s => s.setTeam);
+	const teamIndex = useRankingsStore(s => s.teamIndex);
 
 	const { activeTransactions, pastTransactions } = useMemo((): {
 		activeTransactions: any[];
@@ -157,8 +158,12 @@ function HistoryPopover() {
 			}
 
 			const comp = (
-				<TableRow className="cursor-pointer" onClick={() => setTeam(t.team_key)}>
-					<TableCell className="text-left">{t.team_key}</TableCell>
+				<TableRow
+					className="cursor-pointer"
+					onClick={() => setTeam(t.team_key)}
+					key={`transaction_history_${t.team_key}_${t.sell_rank ? 'history' : 'active'}`}
+				>
+					<TableCell className="text-left">{teamIndex[t.team_key].team || t.team_key}</TableCell>
 					<TableCell>${t.buy_price.toFixed(2)}</TableCell>
 					<TableCell>{t.shares}</TableCell>
 					<TableCell>${t.sell_price?.toFixed(2) ?? t.current_price.toFixed(2)}</TableCell>
@@ -189,7 +194,7 @@ function HistoryPopover() {
 					<IoBookOutline className="text-neutral-600 m-auto w-10 group-hover:hidden" size={24} />
 					<IoBook className="text-neutral-600 m-auto w-10 hidden group-hover:block" size={24} />
 				</PopoverTrigger>
-				<PopoverContent className="bg-neutral-700 mr-4 text-neutral-300 text-xl p-5 w-fit">
+				<PopoverContent className="bg-neutral-700 mr-4 text-neutral-300 text-xl p-5 w-fit max-h-[60vh] overflow-auto">
 					<div>Active</div>
 					<Table className="text-center">
 						<TableHeader>
