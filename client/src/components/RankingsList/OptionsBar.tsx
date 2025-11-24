@@ -35,6 +35,7 @@ export default function OptionsBar() {
 				<FilterPopover />
 			</div>
 			<div className="ml-auto mr-4 flex gap-2">
+				<CurrentValue />
 				<div className="h-full bg-transparent hover:bg-neutral-700/40 aspect-square rounded-lg flex">
 					<GrCircleQuestion className="text-neutral-600 m-auto w-[60%] h-[60%]" />
 				</div>
@@ -121,6 +122,46 @@ function Conference({ conference }: { conference: string }) {
 			<Checkbox checked={conferenceFilter.includes(conference)} className="my-auto" />
 			{conference}
 		</div>
+	);
+}
+
+function CurrentValue() {
+	const transactionsLoading = useTransactionStore(s => s.isLoading);
+	const transactions = useTransactionStore(s => s.transactions);
+	const user = useAuthStore(s => s.user);
+
+	const totalProfit = useMemo(
+		() =>
+			transactions.reduce((total, team) => {
+				let profit = (team.sell_price ?? team.current_price) * team.shares - team.buy_price * team.shares;
+
+				if (!team.is_buy) {
+					profit *= -1;
+				}
+
+				return total + profit;
+			}, 0),
+		[transactions]
+	);
+
+	let profitColor = '';
+
+	if (totalProfit > 0) {
+		profitColor = 'text-green-500';
+	} else if (totalProfit < 0) {
+		profitColor = 'text-red-500';
+	}
+
+	return (
+		!transactionsLoading &&
+		user && (
+			<div className="flex gap-2 m-auto mr-4">
+				<div className="text-neutral-500">Total Profit:</div>
+				<div className={`${profitColor}`}>
+					{totalProfit < 0 ? '-' : '+'}${totalProfit.toFixed(2)}
+				</div>
+			</div>
+		)
 	);
 }
 
