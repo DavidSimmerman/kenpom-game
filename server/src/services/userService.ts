@@ -25,6 +25,10 @@ export async function findUser(criteria: { id?: string; googleId?: string; email
 }
 
 export async function createUser(profile: GoogleProfile): Promise<UserInfo> {
+	if (!profile.emails || profile.emails.length === 0) {
+		throw new Error('User email is required');
+	}
+
 	const rows = await db.query<UserInfo>(
 		`INSERT INTO users (google_id, email, username, picture)
      	VALUES ($1, $2, $3, $4)

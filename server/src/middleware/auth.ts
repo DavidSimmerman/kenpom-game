@@ -5,9 +5,7 @@ import { UserInfo } from '../types/User.js';
 
 declare global {
 	namespace Express {
-		interface Request {
-			user?: UserInfo;
-		}
+		interface User extends UserInfo {}
 	}
 }
 
