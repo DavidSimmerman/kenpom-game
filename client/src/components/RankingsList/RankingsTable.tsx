@@ -8,6 +8,7 @@ import { filterTeams, sortTeams } from './utils';
 import { useTeamStore } from '@/stores/useTeamStore';
 import { HiCurrencyDollar } from 'react-icons/hi';
 import { useTransactionStore } from '@/stores/useTransactionStore';
+import { BsGraphDownArrow, BsGraphUpArrow } from 'react-icons/bs';
 
 export default function RankingsTable() {
 	const teamIndex = useRankingsStore(s => s.teamIndex);
@@ -75,7 +76,15 @@ export default function RankingsTable() {
 								key={`kp_rankings_table_team_${team.team}_price`}
 							>
 								<span>$&nbsp;</span>
-								<span>{team.price.toFixed(2)}</span>
+								<span className="mr-1">{team.price.toFixed(2)}</span>
+								<span className="ml-auto">
+									{team.trend &&
+										(team.trend === 'up' ? (
+											<BsGraphUpArrow className="text-green-500" />
+										) : (
+											<BsGraphDownArrow className="text-red-500" />
+										))}
+								</span>
 							</TableCell>
 							{Object.entries(team).map(([header, rank]) => {
 								if (header.endsWith('_rank') || header === 'price' || header === 'team_key') return null;

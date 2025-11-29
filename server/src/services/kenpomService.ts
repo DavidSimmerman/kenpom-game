@@ -32,7 +32,7 @@ type Header = (typeof HEADERS)[number];
 
 type TeamData = {
 	[K in Header]: K extends 'team' | 'conference' | 'win_loss' ? string : number;
-} & { price: number; team_key: string };
+} & { price: number; team_key: string; trend?: 'up' | 'down' | undefined };
 
 type KenpomData = Record<string, TeamData>;
 
@@ -134,6 +134,37 @@ export async function getTeam(teamKey: string) {
 			...kenpomRankings[teamKey],
 			history: queryResults.map(h => ({ ...h, price: getPrice(h.net_rating, h.rank) }))
 		};
+	} catch (error) {
+		console.error('Error fetching team history:', error);
+		throw new Error('Failed to fetch team history');
+	}
+}
+
+export async function getSnapshot(days = 7) {
+	const query = `
+		SELECT
+			team_key,
+			rank,
+			net_rating::float as net_rating
+		FROM kenpom_rankings
+		WHERE date::date = CURRENT_DATE - ($1 * INTERVAL '1 day')
+	`;
+
+	try {
+		const results = await db.query(query, [days]);
+
+		const snapshotMap: Record<string, { rank: number; net_rating: number; price: number }> = {};
+
+		results.forEach(
+			row =>
+				(snapshotMap[row.team_key] = {
+					rank: row.rank,
+					net_rating: row.net_rating,
+					price: getPrice(row.net_rating, row.rank)
+				})
+		);
+
+		return snapshotMap;
 	} catch (error) {
 		console.error('Error fetching team history:', error);
 		throw new Error('Failed to fetch team history');

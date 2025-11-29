@@ -1,12 +1,26 @@
 import { Request, Response } from 'express';
-import { fetchKenpomRankings, getTeam } from '../services/kenpomService.js';
+import { fetchKenpomRankings, getSnapshot, getTeam } from '../services/kenpomService.js';
 import { PostgresService } from '../services/dbService.js';
 import { BadRequestError } from 'src/errors/Errors.js';
 
 const db = PostgresService.getInstance();
 
 export async function getKenpomRankings(_req: Request, res: Response) {
-	const kpRankings = await fetchKenpomRankings();
+	const [kpRankings, snapshot] = await Promise.all([fetchKenpomRankings(), getSnapshot(7)]);
+
+	Object.keys(kpRankings).forEach(teamKey => {
+		kpRankings[teamKey].trend = undefined;
+
+		const currentPrice = kpRankings[teamKey].price;
+		const snapshotPrice = snapshot[teamKey].price;
+		const trend = currentPrice - snapshotPrice;
+
+		if (trend > 5) {
+			kpRankings[teamKey].trend = 'up';
+		} else if (trend < -5) {
+			kpRankings[teamKey].trend = 'down';
+		}
+	});
 
 	res.json(kpRankings);
 }

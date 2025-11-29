@@ -28,6 +28,7 @@ export interface KenpomTeam {
 	noncon_sos_rank: number;
 	price: number;
 	history: TeamHistoryEntry[];
+	trend?: 'up' | 'down' | undefined;
 }
 
 export interface TeamHistoryEntry {
