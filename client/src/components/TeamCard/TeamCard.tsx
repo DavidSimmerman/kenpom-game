@@ -25,7 +25,18 @@ export default function TeamCard() {
 	};
 
 	const ratingHistory = useMemo(() => {
-		return teamData?.history.map(history => ({ ...history, datetime: new Date(history.date) }));
+		if (!teamData) return;
+
+		const mappedData = teamData?.history.map(history => ({ ...history, datetime: new Date(history.date) }));
+
+		const latestEntry = mappedData.at(-1);
+		if (latestEntry) {
+			latestEntry.net_rating = teamData.net_rating;
+			latestEntry.rank = teamData.rank;
+			latestEntry.price = teamData.price;
+		}
+
+		return mappedData;
 	}, [teamData]);
 
 	const prices = ratingHistory?.map(h => h.price) || [];
@@ -57,6 +68,11 @@ export default function TeamCard() {
 					</div>
 				) : teamData ? (
 					<div className="flex flex-col">
+						<span className="flex mt-2 mx-auto font-bold">
+							<p className="text-muted-foreground">Current Price:&nbsp;</p>{' '}
+							<p className="font-bold">$ {teamData.price.toFixed(2)}</p>
+						</span>
+
 						<div>
 							<ChartContainer config={chartConfig}>
 								<LineChart accessibilityLayer data={ratingHistory} margin={{ left: 23, right: 12 }}>
@@ -110,6 +126,7 @@ export default function TeamCard() {
 								</LineChart>
 							</ChartContainer>
 						</div>
+
 						<div className="grid grid-cols-2 mt-2">
 							<span className="flex">
 								<p className="text-muted-foreground">Rank:&nbsp;</p> <p className="font-bold">{teamData.rank}</p>
