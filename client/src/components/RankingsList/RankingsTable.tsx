@@ -87,7 +87,8 @@ export default function RankingsTable() {
 								</span>
 							</TableCell>
 							{Object.entries(team).map(([header, rank]) => {
-								if (header.endsWith('_rank') || header === 'price' || header === 'team_key') return null;
+								if (header.endsWith('_rank') || header === 'price' || header === 'team_key' || header === 'trend')
+									return null;
 
 								const rankHeader = (header + '_rank') as keyof KenpomTeam;
 
