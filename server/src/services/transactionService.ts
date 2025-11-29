@@ -1,6 +1,6 @@
-import { BadRequestError } from 'src/errors/Errors';
-import { PostgresService } from './dbService';
-import { fetchKenpomRankings, getPrice, getTeam } from './kenpomService';
+import { BadRequestError } from '../errors/Errors.js';
+import { PostgresService } from './dbService.js';
+import { fetchKenpomRankings, getPrice, getTeam } from './kenpomService.js';
 
 const db = PostgresService.getInstance();
 

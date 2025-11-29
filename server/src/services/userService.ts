@@ -1,5 +1,5 @@
-import { GoogleProfile, UserInfo } from 'src/types/User';
-import { PostgresService } from './dbService';
+import { GoogleProfile, UserInfo } from '../types/User.js';
+import { PostgresService } from './dbService.js';
 
 const db = PostgresService.getInstance();
 

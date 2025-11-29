@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { buyTeam, getTransactions, sellTeam } from 'src/controllers/transactions.js';
+import { buyTeam, getTransactions, sellTeam } from '../controllers/transactions.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = Router();

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { BadRequestError } from 'src/errors/Errors.js';
-import { getTransactions as getTransactionsDb, saveTransaction } from 'src/services/transactionService.js';
+import { BadRequestError } from '../errors/Errors.js';
+import { getTransactions as getTransactionsDb, saveTransaction } from '../services/transactionService.js';
 
 export async function getTransactions(req: Request, res: Response) {
 	const userId = req.user!.id;

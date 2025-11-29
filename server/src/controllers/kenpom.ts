@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { fetchKenpomRankings, getSnapshot, getTeam } from '../services/kenpomService.js';
 import { PostgresService } from '../services/dbService.js';
-import { BadRequestError } from 'src/errors/Errors.js';
+import { BadRequestError } from '../errors/Errors.js';
 
 const db = PostgresService.getInstance();
 

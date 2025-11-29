@@ -1,6 +1,6 @@
 import * as cheerio from 'cheerio';
-import { PostgresService } from './dbService';
-import { BadRequestError } from 'src/errors/Errors';
+import { PostgresService } from './dbService.js';
+import { BadRequestError } from '../errors/Errors.js';
 
 const db = PostgresService.getInstance();
 
