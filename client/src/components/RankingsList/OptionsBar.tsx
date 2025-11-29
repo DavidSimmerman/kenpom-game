@@ -11,10 +11,12 @@ import { AvatarImage, Avatar, AvatarFallback } from '../ui/avatar';
 import { GrCircleQuestion } from 'react-icons/gr';
 import GoogleSignIn from '../Auth/GoogleSignIn';
 import { useTransactionStore } from '@/stores/useTransactionStore';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Spinner } from '../ui/spinner';
 import { useTeamStore } from '@/stores/useTeamStore';
+import { Dialog, DialogContent, DialogHeader, DialogTrigger } from '../ui/dialog';
+import { DialogDescription } from '@radix-ui/react-dialog';
 
 const POWER_CONFERENCES = ['ACC', 'B10', 'B12', 'BE', 'SEC'];
 
@@ -36,9 +38,7 @@ export default function OptionsBar() {
 			</div>
 			<div className="ml-auto mr-4 flex gap-2">
 				<CurrentValue />
-				<div className="h-full bg-transparent hover:bg-neutral-700/40 aspect-square rounded-lg flex">
-					<GrCircleQuestion className="text-neutral-600 m-auto w-[60%] h-[60%]" />
-				</div>
+				<RulesPopup />
 				<>
 					<HistoryPopover />
 					<UserAvatar />
@@ -274,6 +274,132 @@ function HistoryPopover() {
 				</PopoverContent>
 			</Popover>
 		))
+	);
+}
+
+function RulesPopup() {
+	const [isOpen, setIsOpen] = useState(false);
+
+	useEffect(() => {
+		const hasSeenRules = localStorage.getItem('hasSeenRules');
+		if (!hasSeenRules) {
+			setIsOpen(true);
+		}
+	}, []);
+
+	const handleOpenChange = (open: boolean) => {
+		setIsOpen(open);
+		if (!open) {
+			localStorage.setItem('hasSeenRules', 'true');
+		}
+	};
+
+	return (
+		<Dialog open={isOpen} onOpenChange={handleOpenChange}>
+			<DialogTrigger className="h-full bg-transparent hover:bg-neutral-700/40 aspect-square rounded-lg flex">
+				<GrCircleQuestion className="text-neutral-600 m-auto w-[60%] h-[60%]" />
+			</DialogTrigger>
+			<DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+				<DialogHeader className="text-2xl font-bold">Kenpom Stocks Game</DialogHeader>
+				<DialogDescription className="text-neutral-300 space-y-4">
+					<div>
+						<h3 className="text-lg font-semibold text-neutral-100 mb-2">How to Play</h3>
+						<p className="mb-2">
+							Show off your ball knowledge by buying and selling college basketball teams using <i>virtual money</i>{' '}
+							based off their Kenpom rankings.
+						</p>
+						<ul className="list-disc list-outside space-y-1 ml-6">
+							<li>
+								<strong>Buy</strong>: Purchase shares when you think a team will move up in the rankings (price
+								will increase)
+							</li>
+							<li>
+								<strong>Short</strong>: Sell shares you don't own when you think a team will drop in rankings
+								(price will decrease)
+							</li>
+							<li>
+								<strong>Sell</strong> your current investments when you think they have peaked and you will lock
+								in the profit you have made.
+							</li>
+							<li>
+								The <strong>Total Profit</strong> is a calculation of all current investments as long as past ones
+								you have sold.
+							</li>
+							<li>
+								View your current and past transactions by clicking on the <strong>Book</strong> icon on the top
+								left.
+							</li>
+							<li>Click on a team in the list to begin investing!</li>
+						</ul>
+					</div>
+
+					<div>
+						<h3 className="text-lg font-semibold text-neutral-100 mb-2">Price Calculation</h3>
+						<p className="mb-3">
+							Each team's stock price is calculated using their <strong>Net Rating</strong> and{' '}
+							<strong>Rank</strong>:
+						</p>
+
+						<div className="space-y-3">
+							<div>
+								<p className="font-semibold text-neutral-100 mb-1">1. Base Price (from Net Rating)</p>
+								<div className="bg-neutral-800 p-2 rounded-md font-mono text-xs mb-1">
+									Base = (100 × (Net Rating + 5)) ÷ 40
+								</div>
+								<p className="text-sm text-neutral-400">Minimum of $0.01</p>
+							</div>
+
+							<div>
+								<p className="font-semibold text-neutral-100 mb-1">2. Net Rating Bonuses</p>
+								<ul className="text-sm space-y-0.5 ml-2">
+									<li>
+										Net Rating {'>'} 43: <span className="text-green-400">+$100</span>
+									</li>
+									<li>
+										Net Rating {'>'} 40: <span className="text-green-400">+$50</span>
+									</li>
+									<li>
+										Net Rating {'>'} 37: <span className="text-green-400">+$15</span>
+									</li>
+									<li>
+										Net Rating {'>'} 35: <span className="text-green-400">+$5</span>
+									</li>
+								</ul>
+							</div>
+
+							<div>
+								<p className="font-semibold text-neutral-100 mb-1">3. Rank Bonuses</p>
+								<ul className="text-sm space-y-0.5 ml-2">
+									<li>
+										Rank #1: <span className="text-green-400">+$25</span>
+									</li>
+									<li>
+										Rank #2-3: <span className="text-green-400">+$20</span>
+									</li>
+									<li>
+										Rank #4-5: <span className="text-green-400">+$15</span>
+									</li>
+									<li>
+										Rank #6-10: <span className="text-green-400">+$10</span>
+									</li>
+									<li>
+										Rank #11-20: <span className="text-green-400">+$5</span>
+									</li>
+									<li>
+										Rank #21-30: <span className="text-green-400">+$2.50</span>
+									</li>
+								</ul>
+							</div>
+						</div>
+
+						<p className="mt-3 text-sm text-neutral-400">
+							The final price is the sum of all three components. Prices are updated in real time as they update on
+							Kenpom.
+						</p>
+					</div>
+				</DialogDescription>
+			</DialogContent>
+		</Dialog>
 	);
 }
 
