@@ -9,6 +9,7 @@ import { BsGraphUpArrow, BsGraphDownArrow } from 'react-icons/bs';
 import GoogleSignIn from '../Auth/GoogleSignIn';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useTransactionStore } from '@/stores/useTransactionStore';
+import { Input } from '../ui/input';
 
 export default function TeamCard() {
 	const teamName = useTeamStore(s => s.teamName);
@@ -174,8 +175,12 @@ function TeamCardButtons() {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
+	const [shareSelecting, setShareSelecting] = useState<'buy' | 'short' | null>(null);
+	const [shareCount, setShareCount] = useState<number>(1);
+
 	useEffect(() => {
 		setError(null);
+		setShareSelecting(null);
 	}, [teamName]);
 
 	const handleTransaction = async (action: 'buy' | 'short' | 'sell', shares = 1) => {
@@ -200,7 +205,7 @@ function TeamCardButtons() {
 	return (
 		<>
 			{error && <div className="mt-4 p-3 bg-red-500/10 border border-red-500/50 rounded text-red-600 text-sm">{error}</div>}
-			<div className="mt-6 flex gap-3 w-full just">
+			<div className="mt-8 flex gap-3 w-full just">
 				{isAuthenticated && user ? (
 					activeTransaction && profit != null ? (
 						<Button
@@ -214,19 +219,53 @@ function TeamCardButtons() {
 									: 'text-red-500 border-red-600/50 hover:bg-red-600/30'
 							} bg-transparent  border-2  disabled:opacity-50`}
 						>
-							{isSubmitting ? 'Processing...' : `Sell for ${parseInt(profit) < 0 ? '-' : '+'}$${profit}`}
+							{isSubmitting ? 'Loading...' : `Sell for ${parseInt(profit) < 0 ? '-' : '+'}$${profit}`}
 						</Button>
+					) : shareSelecting ? (
+						<>
+							<div className="w-[20%] ml-auto relative">
+								<div className="absolute top-[-22px] left-2 text-sm text-neutral-500">Shares</div>
+								<Input
+									className=""
+									type="number"
+									min={1}
+									max={10}
+									step={1}
+									placeholder="1"
+									value={shareCount}
+									onChange={e => setShareCount(parseInt(e.target.value))}
+									disabled={isSubmitting}
+								/>
+							</div>
+							<Button
+								onClick={() => handleTransaction(shareSelecting, shareCount)}
+								disabled={isSubmitting}
+								className={`w-[20%] capitalize bg-transparent border-2 disabled:opacity-50 ${
+									shareSelecting === 'buy'
+										? 'text-green-600 hover:bg-green-600/30 border-green-600/50'
+										: 'text-red-600 hover:bg-red-600/30 border-red-600/50'
+								}`}
+							>
+								{isSubmitting ? (
+									'Loading...'
+								) : (
+									<>
+										{shareSelecting} {shareSelecting === 'buy' ? <BsGraphUpArrow /> : <BsGraphDownArrow />}
+									</>
+								)}
+							</Button>
+						</>
 					) : (
 						<>
 							<Button
-								onClick={() => handleTransaction('buy')}
+								onClick={() => setShareSelecting('buy')}
 								disabled={isSubmitting}
 								className="w-[20%] ml-auto text-green-600 bg-transparent hover:bg-green-600/30 border-2 border-green-600/50 disabled:opacity-50"
 							>
 								{isSubmitting ? 'Processing...' : 'Buy'} <BsGraphUpArrow />
 							</Button>
 							<Button
-								onClick={() => handleTransaction('short')}
+								onClick={() => setShareSelecting('short')}
 								disabled={isSubmitting}
 								className="w-[20%] text-red-600 bg-transparent hover:bg-red-600/30 border-2 border-red-600/50 disabled:opacity-50"
 							>
