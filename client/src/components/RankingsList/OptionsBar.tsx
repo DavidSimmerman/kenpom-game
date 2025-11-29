@@ -25,8 +25,8 @@ export default function OptionsBar() {
 	const setSearch = useRankingsStore(s => s.setSearch);
 
 	return (
-		<div className="bg-secondary pt-2 z-10 flex w-full">
-			<div className="flex ml-4 gap-2">
+		<div className="bg-secondary pt-4 md:pt-2 z-10 flex flex-col-reverse md:pb-2 md:flex-row w-screen">
+			<div className="flex ml-4 gap-2 my-4 md:my-0">
 				<IoSearch className="text-neutral-600 my-auto mr-2" size={20} />
 				<Input
 					className="w-[400px] bg-neutral-900 border-neutral-600"
@@ -36,7 +36,7 @@ export default function OptionsBar() {
 				/>
 				<FilterPopover />
 			</div>
-			<div className="ml-auto mr-4 flex gap-2">
+			<div className="md:ml-auto mx-4 flex gap-2">
 				<CurrentValue />
 				<RulesPopup />
 				<>
@@ -155,7 +155,7 @@ function CurrentValue() {
 	return (
 		!transactionsLoading &&
 		user && (
-			<div className="flex gap-2 m-auto mr-4">
+			<div className="flex gap-2 my-auto mr-auto md:mr-4">
 				<div className="text-neutral-500">Total Profit:</div>
 				<div className={`${profitColor}`}>
 					{totalProfit < 0 ? '-' : '+'}${totalProfit.toFixed(2)}
@@ -235,9 +235,18 @@ function HistoryPopover() {
 					<IoBookOutline className="text-neutral-600 m-auto w-10 group-hover:hidden" size={24} />
 					<IoBook className="text-neutral-600 m-auto w-10 hidden group-hover:block" size={24} />
 				</PopoverTrigger>
-				<PopoverContent className="bg-neutral-700 mr-4 text-neutral-300 text-xl p-5 w-fit max-h-[60vh] overflow-auto">
-					<div>Active</div>
-					<Table className="text-center">
+				<PopoverContent
+					className="
+					bg-neutral-700 text-neutral-300 
+					mr-4 p-5 
+					text-sm md:text-xl 
+					bottom-0 h-full
+					md:max-h-[60vh]  
+					w-fit max-w-[100vw]
+					overflow-auto"
+				>
+					<div className="text-lg md:text-xl">Active</div>
+					<Table className="text-center text-[.8rem]">
 						<TableHeader>
 							<TableRow>
 								<TableHead>Team</TableHead>
@@ -254,8 +263,8 @@ function HistoryPopover() {
 						<div className="text-center text-sm my-3 text-neutral-400">No current investments</div>
 					)}
 
-					<div>History</div>
-					<Table className="text-center">
+					<div className="text-lg md:text-xl mt-6 md:mt-0">History</div>
+					<Table className="text-center text-[.8rem]">
 						<TableHeader>
 							<TableRow>
 								<TableHead>Team</TableHead>

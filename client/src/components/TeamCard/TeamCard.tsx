@@ -243,14 +243,13 @@ function TeamCardButtons() {
 							<div className="w-[20%] ml-auto relative">
 								<div className="absolute top-[-22px] left-2 text-sm text-neutral-500">Shares</div>
 								<Input
-									className=""
 									type="number"
 									min={1}
 									max={10}
 									step={1}
 									placeholder="1"
 									value={shareCount}
-									onChange={e => setShareCount(parseInt(e.target.value))}
+									onChange={e => setShareCount(Math.max(Math.min(e.target.valueAsNumber, 10), 1))}
 									disabled={isSubmitting}
 								/>
 							</div>
@@ -298,9 +297,9 @@ function TeamCardButtons() {
 				)}
 
 				<DialogClose className="w-[20%] mr-auto">
-					<Button className="w-full text-neutral-500 bg-transparent hover:bg-neutral-500/30 border-2 border-neutral-500/50">
+					<div className="w-full text-neutral-500 bg-transparent py-2 px-4 h-10 text-center text-sm rounded-md hover:bg-neutral-500/30 border-2 border-neutral-500/50">
 						Cancel
-					</Button>
+					</div>
 				</DialogClose>
 			</div>
 		</>

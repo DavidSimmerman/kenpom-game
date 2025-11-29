@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
-import { ScrollArea } from '../ui/scroll-area';
 import { KenpomTeam } from '@/types/kenpom';
 import { KenpomTeamKey } from './types';
 import { useRankingsStore } from '../../stores/useRankingsStore';
@@ -31,16 +30,16 @@ export default function RankingsTable() {
 	const headers = useMemo<KenpomTeamKey[]>(() => {
 		if (!teams || teams.length === 0) return [];
 		return Object.keys(teams[0] as KenpomTeam).filter(
-			(h): h is KenpomTeamKey => !h.endsWith('_rank') && h !== 'price' && h !== 'team_key'
+			(h): h is KenpomTeamKey => !h.endsWith('_rank') && h !== 'price' && h !== 'team_key' && h !== 'trend'
 		);
 	}, [teams]);
 
 	return teams?.length === 0 ? (
 		<div className="mx-auto my-8 text-neutral-400">No teams found</div>
 	) : (
-		<ScrollArea className="h-screen border w-fit min-w-full overflow-x-auto">
-			<Table>
-				<TableHeader className="sticky top-0 bg-secondary">
+		<div className="h-screen w-full overflow-x-auto overflow-y-auto">
+			<Table className="text-xs w-max min-w-full">
+				<TableHeader className="sticky top-0 bg-secondary z-10">
 					<TableRow>
 						<TableHead
 							className={`capitalize hover:bg-neutral-700/40 cursor-pointer text-center ${
@@ -118,6 +117,6 @@ export default function RankingsTable() {
 					))}
 				</TableBody>
 			</Table>
-		</ScrollArea>
+		</div>
 	);
 }
