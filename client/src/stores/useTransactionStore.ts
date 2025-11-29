@@ -14,14 +14,13 @@ type TransactionState = {
 
 export const useTransactionStore = create<TransactionState>(set => {
 	async function loadTransactions() {
-		const user = useAuthStore.getState().user;
 		const token = useAuthStore.getState().token;
 
-		if (!user || !token) {
+		if (!token) {
 			throw new Error('User not signed in');
 		}
 
-		const response = await fetch(`${API_DOMAIN}/transactions/${user.id}/`, {
+		const response = await fetch(`${API_DOMAIN}/transactions/`, {
 			headers: {
 				Authorization: `Bearer ${token}`
 			}
@@ -37,15 +36,14 @@ export const useTransactionStore = create<TransactionState>(set => {
 	}
 
 	async function buyTeam(teamKey: string, isBuy = true, shares = 1) {
-		const user = useAuthStore.getState().user;
 		const token = useAuthStore.getState().token;
 
-		if (!user || !token) {
+		if (!token) {
 			throw new Error('User not signed in');
 		}
 
 		const response = await fetch(
-			`${API_DOMAIN}/transactions/${user.id}/buy/${teamKey}?action=${isBuy ? 'buy' : 'short'}&shares=${shares}`,
+			`${API_DOMAIN}/transactions/buy/${teamKey}?action=${isBuy ? 'buy' : 'short'}&shares=${shares}`,
 			{
 				method: 'PUT',
 				headers: {
@@ -65,14 +63,13 @@ export const useTransactionStore = create<TransactionState>(set => {
 	}
 
 	async function sellTeam(teamKey: string) {
-		const user = useAuthStore.getState().user;
 		const token = useAuthStore.getState().token;
 
-		if (!user || !token) {
+		if (!token) {
 			throw new Error('User not signed in');
 		}
 
-		const response = await fetch(`${API_DOMAIN}/transactions/${user.id}/sell/${teamKey}`, {
+		const response = await fetch(`${API_DOMAIN}/transactions/sell/${teamKey}`, {
 			method: 'PATCH',
 			headers: {
 				'Authorization': `Bearer ${token}`,

@@ -3,7 +3,7 @@ import { BadRequestError } from 'src/errors/Errors.js';
 import { getTransactions as getTransactionsDb, saveTransaction } from 'src/services/transactionService.js';
 
 export async function getTransactions(req: Request, res: Response) {
-	const userId = req.params.userId;
+	const userId = req.user!.id;
 
 	try {
 		const transactions = await getTransactionsDb(userId);
@@ -20,7 +20,7 @@ export async function getTransactions(req: Request, res: Response) {
 }
 
 export async function buyTeam(req: Request, res: Response) {
-	const userId = req.params.userId;
+	const userId = req.user!.id;
 	const teamKey = req.params.teamKey;
 
 	try {
@@ -41,7 +41,7 @@ export async function buyTeam(req: Request, res: Response) {
 }
 
 export async function sellTeam(req: Request, res: Response) {
-	const userId = req.params.userId;
+	const userId = req.user!.id;
 	const teamKey = req.params.teamKey;
 
 	try {
