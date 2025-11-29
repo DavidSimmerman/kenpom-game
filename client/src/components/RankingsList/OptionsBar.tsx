@@ -182,7 +182,7 @@ function HistoryPopover() {
 			return { activeTransactions, pastTransactions };
 		}
 
-		const sortedTransactions = transactions.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+		const sortedTransactions = transactions.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
 		sortedTransactions.forEach(t => {
 			let profit = (t.sell_price ?? t.current_price) * t.shares - t.buy_price * t.shares;
 
@@ -204,7 +204,7 @@ function HistoryPopover() {
 					onClick={() => setTeam(t.team_key)}
 					key={`transaction_history_${t.team_key}_${t.sell_rank ? 'history' : 'active'}`}
 				>
-					<TableCell className="text-left">{teamIndex[t.team_key].team || t.team_key}</TableCell>
+					<TableCell className="text-left">{teamIndex?.[t.team_key]?.team || t.team_key}</TableCell>
 					<TableCell>${t.buy_price.toFixed(2)}</TableCell>
 					<TableCell>{t.shares}</TableCell>
 					<TableCell>${t.sell_price?.toFixed(2) ?? t.current_price.toFixed(2)}</TableCell>

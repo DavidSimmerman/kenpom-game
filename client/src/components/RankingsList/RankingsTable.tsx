@@ -86,7 +86,7 @@ export default function RankingsTable() {
 								</span>
 							</TableCell>
 							{Object.entries(team).map(([header, rank]) => {
-								if (header.endsWith('_rank') || header === 'price' || header === 'team_key' || header === 'trend')
+								if (header.endsWith('_rank') || header === 'price' || header === 'team_key' || header === 'trend' || header === 'history')
 									return null;
 
 								const rankHeader = (header + '_rank') as keyof KenpomTeam;
@@ -100,7 +100,7 @@ export default function RankingsTable() {
 											{team[rankHeader] ? (
 												<>
 													{rank}
-													<span className="ml-1 text-xs text-gray-600">{team[rankHeader]}</span>
+													<span className="ml-1 text-xs text-gray-600">{typeof team[rankHeader] === 'number' ? team[rankHeader] : ''}</span>
 												</>
 											) : (
 												rank
