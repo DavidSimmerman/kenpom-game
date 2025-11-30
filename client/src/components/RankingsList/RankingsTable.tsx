@@ -37,7 +37,7 @@ export default function RankingsTable() {
 	return teams?.length === 0 ? (
 		<div className="mx-auto my-8 text-neutral-400">No teams found</div>
 	) : (
-		<div className="h-screen w-full overflow-x-auto overflow-y-auto">
+		<div className="h-screen w-full overflow-x-auto overflow-y-auto overscroll-contain">
 			<Table className="text-xs w-max min-w-full">
 				<TableHeader className="sticky top-0 bg-secondary z-10">
 					<TableRow>
@@ -86,7 +86,13 @@ export default function RankingsTable() {
 								</span>
 							</TableCell>
 							{Object.entries(team).map(([header, rank]) => {
-								if (header.endsWith('_rank') || header === 'price' || header === 'team_key' || header === 'trend' || header === 'history')
+								if (
+									header.endsWith('_rank') ||
+									header === 'price' ||
+									header === 'team_key' ||
+									header === 'trend' ||
+									header === 'history'
+								)
 									return null;
 
 								const rankHeader = (header + '_rank') as keyof KenpomTeam;
@@ -100,7 +106,9 @@ export default function RankingsTable() {
 											{team[rankHeader] ? (
 												<>
 													{rank}
-													<span className="ml-1 text-xs text-gray-600">{typeof team[rankHeader] === 'number' ? team[rankHeader] : ''}</span>
+													<span className="ml-1 text-xs text-gray-600">
+														{typeof team[rankHeader] === 'number' ? team[rankHeader] : ''}
+													</span>
 												</>
 											) : (
 												rank
