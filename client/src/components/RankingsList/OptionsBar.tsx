@@ -65,7 +65,7 @@ function FilterPopover() {
 
 	return (
 		<Popover>
-			<PopoverTrigger className="h-full bg-transparent hover:bg-neutral-700/40 aspect-square rounded-lg flex">
+			<PopoverTrigger className="h-full mr-2 bg-transparent hover:bg-neutral-700/40 aspect-square rounded-lg flex">
 				<FaFilter className="text-neutral-600 m-auto" />
 			</PopoverTrigger>
 			<PopoverContent className="bg-neutral-700 mr-4 text-neutral-300 text-xl p-5 w-fit">
