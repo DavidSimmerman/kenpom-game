@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { Spinner } from '../ui/spinner';
 
 export default function AuthCallback() {
 	const setToken = useAuthStore(s => s.setToken);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		const urlParams = new URLSearchParams(window.location.search);
@@ -13,17 +15,17 @@ export default function AuthCallback() {
 		// TODO: add error toast
 		if (error) {
 			console.error('Authentication error:', error);
-			window.location.href = '/';
+			navigate('/');
 			return;
 		}
 
 		if (token) {
 			setToken(token);
-			window.location.href = '/';
+			navigate('/');
 		} else {
-			window.location.href = '/';
+			navigate('/');
 		}
-	}, [setToken]);
+	}, [setToken, navigate]);
 
 	return (
 		<div className="flex flex-col gap-4 items-center justify-center h-screen bg-secondary">
