@@ -37,7 +37,7 @@ export default function RankingsTable() {
 	return teams?.length === 0 ? (
 		<div className="mx-auto my-8 text-neutral-400">No teams found</div>
 	) : (
-		<div className="h-screen w-full overflow-x-auto overflow-y-auto overscroll-contain">
+		<div className="h-screen w-full overflow-x-auto overflow-y-auto overscroll-none">
 			<Table className="text-xs w-max min-w-full">
 				<TableHeader className="sticky top-0 bg-secondary z-10">
 					<TableRow>
