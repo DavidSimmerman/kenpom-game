@@ -307,7 +307,7 @@ function RulesPopup() {
 
 	return (
 		<Dialog open={isOpen} onOpenChange={handleOpenChange}>
-			<DialogTrigger className="h-full bg-transparent hover:bg-neutral-700/40 aspect-square rounded-lg flex">
+			<DialogTrigger className="h-full ml-auto bg-transparent hover:bg-neutral-700/40 aspect-square rounded-lg flex">
 				<GrCircleQuestion className="text-neutral-600 m-auto w-[60%] h-[60%]" />
 			</DialogTrigger>
 			<DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
