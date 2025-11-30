@@ -158,7 +158,7 @@ function CurrentValue() {
 			<div className="flex gap-2 my-auto mr-auto md:mr-4">
 				<div className="text-neutral-500">Total Profit:</div>
 				<div className={`${profitColor}`}>
-					{totalProfit < 0 ? '-' : '+'}${totalProfit.toFixed(2)}
+					{totalProfit < 0 ? '-' : '+'}${Math.abs(totalProfit).toFixed(2)}
 				</div>
 			</div>
 		)
@@ -182,7 +182,9 @@ function HistoryPopover() {
 			return { activeTransactions, pastTransactions };
 		}
 
-		const sortedTransactions = transactions.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+		const sortedTransactions = transactions.sort(
+			(a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+		);
 		sortedTransactions.forEach(t => {
 			let profit = (t.sell_price ?? t.current_price) * t.shares - t.buy_price * t.shares;
 
