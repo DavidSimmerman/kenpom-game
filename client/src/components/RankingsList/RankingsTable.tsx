@@ -39,7 +39,7 @@ export default function RankingsTable() {
 	) : (
 		<div className="h-screen w-full overflow-x-auto overflow-y-auto overscroll-none">
 			<Table className="text-xs w-max min-w-full">
-				<TableHeader className="sticky top-0 bg-secondary z-10">
+				<TableHeader className="sticky top-0 bg-secondary z-10 text-[.8rem] md:text-sm">
 					<TableRow>
 						<TableHead
 							className={`capitalize hover:bg-neutral-700/40 cursor-pointer text-center ${
@@ -68,7 +68,7 @@ export default function RankingsTable() {
 						<TableRow
 							onClick={() => setTeam(team.team_key)}
 							key={`kp_rankings_table_team_${team.team}`}
-							className="cursor-pointer text-base"
+							className="cursor-pointer text-base text-[.8rem] md:text-lg"
 						>
 							<TableCell
 								className="text-center flex w-full justify-between items-center"
@@ -96,6 +96,11 @@ export default function RankingsTable() {
 									return null;
 
 								const rankHeader = (header + '_rank') as keyof KenpomTeam;
+
+								const maxChars = 14;
+								if (window.innerWidth <= 768 && header === 'team' && rank.length > maxChars) {
+									rank = rank.slice(0, maxChars - 3) + '...';
+								}
 
 								return (
 									<TableCell
