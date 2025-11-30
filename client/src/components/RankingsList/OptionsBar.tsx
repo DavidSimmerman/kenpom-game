@@ -251,12 +251,12 @@ function HistoryPopover() {
 					<Table className="text-center text-[.8rem]">
 						<TableHeader>
 							<TableRow>
-								<TableHead>Team</TableHead>
-								<TableHead>Buy Price</TableHead>
-								<TableHead>Shares</TableHead>
-								<TableHead>Current Price</TableHead>
-								<TableHead>Buy/Short</TableHead>
-								<TableHead>Profit</TableHead>
+								<TableHead className="md:text-left">Team</TableHead>
+								<TableHead className="md:text-left">Buy Price</TableHead>
+								<TableHead className="md:text-left">Shares</TableHead>
+								<TableHead className="md:text-left">Current Price</TableHead>
+								<TableHead className="md:text-left">Buy/Short</TableHead>
+								<TableHead className="md:text-left">Profit</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>{activeTransactions.map(t => t)}</TableBody>
@@ -269,12 +269,12 @@ function HistoryPopover() {
 					<Table className="text-center text-[.8rem]">
 						<TableHeader>
 							<TableRow>
-								<TableHead>Team</TableHead>
-								<TableHead>Buy Price</TableHead>
-								<TableHead>Shares</TableHead>
-								<TableHead>Sell Price</TableHead>
-								<TableHead>Buy/Short</TableHead>
-								<TableHead>Profit</TableHead>
+								<TableHead className="md:text-left">Team</TableHead>
+								<TableHead className="md:text-left">Buy Price</TableHead>
+								<TableHead className="md:text-left">Shares</TableHead>
+								<TableHead className="md:text-left">Sell Price</TableHead>
+								<TableHead className="md:text-left">Buy/Short</TableHead>
+								<TableHead className="md:text-left">Profit</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>{pastTransactions.map(t => t)}</TableBody>
