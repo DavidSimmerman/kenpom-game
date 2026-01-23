@@ -37,7 +37,7 @@ type TeamData = {
 type KenpomData = Record<string, TeamData>;
 
 export async function fetchKenpomRankings(): Promise<KenpomData> {
-	const response = await fetch('https://kenpom.com/');
+	const response = await fetch('https://kenpom.com/index.php');
 	const data = await response.text();
 
 	const $ = cheerio.load(data);
