@@ -1,4 +1,4 @@
-import * as cheerio from 'cheerio';
+import { chromium } from 'playwright';
 import { PostgresService } from './dbService.js';
 import { BadRequestError } from '../errors/Errors.js';
 
@@ -37,43 +37,60 @@ type TeamData = {
 type KenpomData = Record<string, TeamData>;
 
 export async function fetchKenpomRankings(): Promise<KenpomData> {
-	const response = await fetch('https://kenpom.com/index.php');
-	const data = await response.text();
+	const browser = await chromium.launch({ headless: true });
+	const page = await browser.newPage();
 
-	const $ = cheerio.load(data);
+	try {
+		await page.goto('https://kenpom.com/index.php', { waitUntil: 'networkidle' });
 
-	const rows = $('#ratings-table tbody tr');
+		const rawTeams = await page.evaluate(
+			headers => {
+				const rows = document.querySelectorAll('#ratings-table tbody tr');
+				const result: Record<string, string | number>[] = [];
 
-	const teams: KenpomData = Array.from(rows).reduce<KenpomData>((acc, tr) => {
-		const teamInfo = {} as TeamData;
+				rows.forEach(tr => {
+					const teamInfo: Record<string, string | number> = {};
+					const cells = tr.querySelectorAll('td');
 
-		$(tr)
-			.children()
-			.each((i, td) => {
-				const tdContent = $(td).text().trim();
-				const header = HEADERS[i] as Header;
+					cells.forEach((td, i) => {
+						const tdContent = td.textContent?.trim() ?? '';
+						const header = headers[i];
 
-				if (header === 'team' || header === 'conference' || header === 'win_loss') {
-					teamInfo[header] = tdContent;
-				} else if (header.endsWith('rank')) {
-					teamInfo[header] = parseInt(tdContent);
-				} else if (!isNaN(Number(tdContent))) {
-					teamInfo[header] = parseFloat(tdContent);
-				}
-			});
+						if (header === 'team' || header === 'conference' || header === 'win_loss') {
+							teamInfo[header] = tdContent;
+						} else if (header.endsWith('rank')) {
+							teamInfo[header] = parseInt(tdContent);
+						} else if (!isNaN(Number(tdContent))) {
+							teamInfo[header] = parseFloat(tdContent);
+						}
+					});
 
-		teamInfo['price'] = getPrice(teamInfo.net_rating, teamInfo.rank);
-		teamInfo['team_key'] = teamInfo.team
-			.toLowerCase()
-			.replaceAll(' ', '_')
-			.replaceAll(/[^a-z_]/g, '');
+					if (teamInfo.team) {
+						result.push(teamInfo);
+					}
+				});
 
-		acc[teamInfo.team_key] = teamInfo;
+				return result;
+			},
+			HEADERS as unknown as string[]
+		);
 
-		return acc;
-	}, {});
+		const teams: KenpomData = {};
+		for (const rawTeam of rawTeams) {
+			const team = rawTeam as unknown as TeamData;
+			team.price = getPrice(team.net_rating, team.rank);
+			team.team_key = team.team
+				.toLowerCase()
+				.replaceAll(' ', '_')
+				.replaceAll(/[^a-z_]/g, '');
 
-	return teams;
+			teams[team.team_key] = team;
+		}
+
+		return teams;
+	} finally {
+		await browser.close();
+	}
 }
 
 export function getPrice(net_rating: number, rank: number) {
@@ -140,7 +157,7 @@ export async function getTeam(teamKey: string) {
 	}
 }
 
-export async function getSnapshot(days = 7) {
+export async function getSnapshot(days = 14) {
 	const query = `
 		SELECT
 			team_key,

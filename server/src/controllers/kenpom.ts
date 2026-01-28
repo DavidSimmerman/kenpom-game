@@ -11,8 +11,8 @@ export async function getKenpomRankings(_req: Request, res: Response) {
 	Object.keys(kpRankings).forEach(teamKey => {
 		kpRankings[teamKey].trend = undefined;
 
-		const currentPrice = kpRankings[teamKey].price;
-		const snapshotPrice = snapshot[teamKey].price;
+		const currentPrice = kpRankings[teamKey]?.price;
+		const snapshotPrice = snapshot[teamKey]?.price;
 		const trend = currentPrice - snapshotPrice;
 
 		if (trend > 5) {
