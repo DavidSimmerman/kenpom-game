@@ -1,6 +1,9 @@
-import { chromium } from 'playwright';
+import { chromium } from 'playwright-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import { PostgresService } from './dbService.js';
 import { BadRequestError } from '../errors/Errors.js';
+
+chromium.use(StealthPlugin());
 
 const db = PostgresService.getInstance();
 
@@ -42,6 +45,8 @@ export async function fetchKenpomRankings(): Promise<KenpomData> {
 
 	try {
 		await page.goto('https://kenpom.com/index.php');
+
+		await page.waitForSelector('#ratings-table', { timeout: 10000 });
 
 		const rawTeams = await page.evaluate(
 			headers => {
