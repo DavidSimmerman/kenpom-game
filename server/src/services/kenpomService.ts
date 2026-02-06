@@ -41,7 +41,7 @@ export async function fetchKenpomRankings(): Promise<KenpomData> {
 	const page = await browser.newPage();
 
 	try {
-		await page.goto('https://kenpom.com/index.php', { waitUntil: 'networkidle' });
+		await page.goto('https://kenpom.com/index.php');
 
 		const rawTeams = await page.evaluate(
 			headers => {
